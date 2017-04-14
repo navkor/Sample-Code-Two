@@ -55,7 +55,8 @@ namespace BP.Service.Providers.Authentication
                     if (userID > 0)
                     {
                         registration = await _context.Registrations.FindAsync(userID);
-                        return await retrieveViewModel(registration);
+                        var user =  retrieveViewModel(registration);
+                        return user;
                     }
                 }
             }
@@ -66,26 +67,24 @@ namespace BP.Service.Providers.Authentication
                 // this user does have a log in cookie and is able to login using it
                 // so, now we need to log them in as a cookie log in rather than a regular log in
                 registration = await _context.Registrations.FindAsync(cookieLVM.userID);
-                vm = await retrieveViewModel(registration);
+                vm = retrieveViewModel(registration);
                 await _login.LoginUserFromCookie(registration, vm.EmailAddress);
             }
 
             return vm;
         }
 
-        internal async Task<LoggedInUserVM> retrieveViewModel(Registration registration)
+        internal LoggedInUserVM retrieveViewModel(Registration registration)
         {
             var vm = new LoggedInUserVM();
-            await Task.Run(() => { 
-                return vm = new LoggedInUserVM
-                {
-                    EmailAddress = RetrieveEmailAddress(registration),
-                    RoleIndex = registration.AccountAttribute.UserRole.Index,
-                    UserName = registration.IdentityAttribute?.UserNames?.FirstOrDefault(y => y.NameType.Index == 1000).Name ?? "",
-                    UserID = registration.ID,
-                    UserRole = registration.AccountAttribute.UserRole.Name
-                };
-            });
+            return vm = new LoggedInUserVM
+            {
+                EmailAddress = RetrieveEmailAddress(registration),
+                RoleIndex = registration.AccountAttribute.UserRole.Index,
+                UserName = registration.IdentityAttribute?.UserNames?.FirstOrDefault(y => y.NameType.Index == 1000).Name ?? "",
+                UserID = registration.ID,
+                UserRole = registration.AccountAttribute.UserRole.Name
+            };
             return vm;
         }
 

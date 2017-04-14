@@ -1,11 +1,7 @@
 ﻿using BP.Service.Providers.Authentication;
 using BP.Service.Providers.Core;
 using BP.VM.PullModels.Authentication;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 
 namespace BP.Web.Areas.Auth.Controllers

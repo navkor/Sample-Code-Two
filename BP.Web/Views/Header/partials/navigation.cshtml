@@ -1,0 +1,42 @@
+﻿@model BP.VM.ViewModels.Authentication.LoggedInUserVM
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                <li>@Html.ActionLink("About", "About", "Home")</li>
+                <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+            </ul>
+            @if (Model.UserID > 0)
+            {
+                // they are logged in
+                var nameText = string.IsNullOrEmpty(Model.UserName) ?
+                    Model.EmailAddress : Model.UserName;
+                var linkText = $"Hello {nameText} !";
+                using (Html.BeginForm("LogOff", "Identity", new { area = "Auth" },  FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>@Html.ActionLink(linkText, "Index", "Manage", routeValues: null, htmlAttributes: new { })</li>
+                    </ul>
+                }
+            }
+            else
+            {
+                // they are not logged in
+                <ul class="nav navbar-nav navbar-right">
+                    <li>@Html.ActionLink("Register", "Register", "Identity", routeValues: new { area = "Auth" }, htmlAttributes: new { id = "registerLink" })</li>
+                    <li>@Html.ActionLink("Log in", "Login", "Identity", routeValues: new { area = "Auth" }, htmlAttributes: new { id = "loginLink" })</li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
