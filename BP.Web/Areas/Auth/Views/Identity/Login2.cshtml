@@ -1,0 +1,49 @@
+﻿@model BP.VM.PullModels.Authentication.LoginAccountStep2
+@{
+    ViewBag.Title = "Login Step Two";
+}
+
+<h2>Login Step Two</h2>
+
+<p>You're IP Address is @ViewBag.IPAddress</p>
+
+<p>Please use the form below to log in.</p>
+<p>To protect your account, this is a two step process.</p>
+
+@using (Html.BeginForm("Login2", "Identity", new { area = "Auth" }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Email)
+    <h4>Login Step Two</h4>
+    @Html.ValidationSummary("", new { @class = "text-danger" })
+    <div class="form-group">
+        @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Model.Email
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.RememberMe, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.CheckBoxFor(m => m.RememberMe)
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-1">
+            <input type="submit" class="btn btn-primary" value="Login" />
+        </div>
+        <div class="col-md-1">
+            @Html.ActionLink("Forgot your password?", "ResetPassword", new { area = "Auth", controller = "Identity", action = "ResetPassword" }, htmlAttributes: new { @class = "btn btn-info" })
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
