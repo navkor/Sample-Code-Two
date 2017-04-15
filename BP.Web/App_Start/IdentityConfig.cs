@@ -11,15 +11,36 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using BP.Web.Models;
+using SendGrid.Helpers.Mail;
+using SendGrid;
+using BP.Service.Providers.Logger;
 
 namespace BP.Web
 {
     public class EmailService : IIdentityMessageService
     {
+        CoreLoggerProvider _logger = new CoreLoggerProvider();
         public Task SendAsync(IdentityMessage message)
         {
             // Plug in your email service here to send an email.
-            return Task.FromResult(0);
+            return configSendGridasync(message);
+        }
+
+        private async Task configSendGridasync(IdentityMessage message)
+        {
+            EmailAddress from = new EmailAddress("noreply@basicallyprepared.com", "Basically Prepared");
+            EmailAddress to = new EmailAddress(message.Destination);
+            var sendgridAPI = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
+            var client = new SendGridClient(sendgridAPI);
+            var plainTextContext = message.Body;
+            var htmlContext = message.Body;
+            var subject = message.Subject;
+            var myMessage = MailHelper.CreateSingleEmail(from, to, subject, plainTextContext, htmlContext);
+            var response = await client.SendEmailAsync(myMessage);
+            if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
+            {
+                await _logger.CreateNewLog($"Email successfully sent to {message.Destination}", "Sendgrid SMTP System", "SendGrid", "Email Service");
+            }
         }
     }
 

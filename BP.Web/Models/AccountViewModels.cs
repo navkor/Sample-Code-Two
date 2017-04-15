@@ -49,12 +49,16 @@ namespace BP.Web.Models
     public class LoginViewModel
     {
         [Required]
-        [Display(Name = "Email")]
+        [Display(Name = "Email/Username")]
         public string Email { get; set; }
 
-        public int step { get; set; } = 1;
-
-        [Required]
+        public int step { get; set; }
+        public string buttonValue { get; set; }
+        public string partialView { get; set; }
+        public string pageTitle { get; set; }
+        public string Instructions { get; set; }
+        public string Warning { get; set; }
+        
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
         public string Password { get; set; }
