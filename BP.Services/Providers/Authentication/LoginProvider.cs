@@ -3,14 +3,11 @@ using BP.Auth;
 using BP.Service.Services.Authentication;
 using BP.VM.PullModels.Authentication;
 using System;
-using System.Linq;
 using System.Data.Entity;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using BP.Global.Delegates;
-using BP.Global;
 using BP.Service.Providers.Logger;
-using BP;
 using System.Web;
 
 namespace BP.Service.Providers.Authentication
@@ -39,25 +36,25 @@ namespace BP.Service.Providers.Authentication
 
         public async Task<Registration> LoginAccountStepOne(LoginAccountStep1 pullModel)
         {
-            return await _service.AccountLoginStepOne(pullModel, _context);
+            return await _service.AccountLoginStepOne(pullModel, _context).ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        public async Task LoginUserFromCookie(Registration registration, string emailAddress)
+        public async Task LoginUserFromCookie(Registration registration, string emailAddress, string IPAddress)
         {
-            var provider = await _context.TokenProviders.FirstOrDefaultAsync(x => x.Index == 10);
-            var entity = await _context.ClaimEntities.FirstOrDefaultAsync(x => x.Index == 10);
-            string loginToken = await _login.ProcessLoginClaim(registration, provider, entity, _context);
+            var provider = await _context.TokenProviders.FirstOrDefaultAsync(x => x.Index == 10).ConfigureAwait(continueOnCapturedContext: false);
+            var entity = await _context.ClaimEntities.FirstOrDefaultAsync(x => x.Index == 10).ConfigureAwait(continueOnCapturedContext: false);
+            string loginToken = await _login.ProcessLoginClaim(registration, provider, entity, _context).ConfigureAwait(continueOnCapturedContext: false);
             await _worker_Authentication(new MethodResults {
                 Success = true,
                 Message = emailAddress,
                 ID = registration.ID
-            }, "cookie");
+            }, "cookie", IPAddress).ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        public async Task<AccountLoggedIn> LoginAccountStepTwo(LoginAccountStep2 pullModel, string salt)
+        public async Task<AccountLoggedIn> LoginAccountStepTwo(LoginAccountStep2 pullModel, string salt, HttpSessionStateBase session, string IPAddress)
         {
             var accountLoggedIn = new AccountLoggedIn();
-            var registration = await _service.AccountLoginStepTwo(pullModel, salt, _context);
+            var registration = await _service.AccountLoginStepTwo(pullModel, salt, _context).ConfigureAwait(continueOnCapturedContext: false);
             string loginToken = "";
             var cookie = new HttpCookie("null");
             var methodResults = new MethodResults {
@@ -67,11 +64,10 @@ namespace BP.Service.Providers.Authentication
             if (registration.ID > 0)
             {
                 methodResults.Success = true;
-                var provider = await _context.TokenProviders.FirstOrDefaultAsync(x => x.Index == 20);
-                var entity = await _context.ClaimEntities.FirstOrDefaultAsync(x => x.Index == 10);
-                loginToken = await _login.ProcessLoginClaim(registration, provider, entity, _context);
-                cookie = await _cookie.CreateLoginCookieAsync(registration.ID, loginToken, pullModel.RememberMe);
-                var session = HttpContext.Current.Session;
+                var provider = await _context.TokenProviders.FirstOrDefaultAsync(x => x.Index == 20).ConfigureAwait(continueOnCapturedContext: false);
+                var entity = await _context.ClaimEntities.FirstOrDefaultAsync(x => x.Index == 10).ConfigureAwait(continueOnCapturedContext: false);
+                loginToken = await _login.ProcessLoginClaim(registration, provider, entity, _context).ConfigureAwait(continueOnCapturedContext: false);
+                cookie = await _cookie.CreateLoginCookieAsync(registration.ID, loginToken, pullModel.RememberMe).ConfigureAwait(continueOnCapturedContext: false);
                 session.SetDataToSession<int>("userID", registration.ID);
             }
             accountLoggedIn = new AccountLoggedIn {
@@ -79,18 +75,17 @@ namespace BP.Service.Providers.Authentication
                 Cookie = cookie,
                 LoginToken = loginToken
             };
-            await _worker_Authentication(methodResults, "username/password");
+            await _worker_Authentication(methodResults, "username/password", IPAddress);
 
             return accountLoggedIn;
         }
 
-        private async Task _worker_Authentication(MethodResults results, string method)
+        private async Task _worker_Authentication(MethodResults results, string method, string IPAddress)
         {
-            var IPAddress = HttpUtility.HtmlEncode (HttpContext.Current.Request.UserHostAddress);
             var message = results.Success ? 
                 $"{results.Message} successfully logged in using {method} from {IPAddress}." : 
                 $"{results.Message} failed log in using {method} from {IPAddress}.";
-            await _logger.CreateNewLog(message, "Account Login", "Login Provider", "Authentication");
+            await _logger.CreateNewLog(message, "Account Login", "Login Provider", "Authentication").ConfigureAwait(continueOnCapturedContext: false);
         }
 
         // Public implementation of Dispose pattern callable by consumers.

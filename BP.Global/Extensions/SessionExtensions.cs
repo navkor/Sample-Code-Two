@@ -1,10 +1,11 @@
-﻿using System.Web.SessionState;
+﻿using System.Web;
+using System.Web.SessionState;
 
 namespace BP
 {
     public static class SessionExtensions
     {
-        public static T GetDataFromSession<T>(this HttpSessionState session, string key)
+        public static T GetDataFromSession<T>(this HttpSessionStateBase session, string key)
         {
             if (session.Count > 0)
                 return (T)session[key];
@@ -12,9 +13,10 @@ namespace BP
                 return default(T);
         }
 
-        public static void SetDataToSession<T>(this HttpSessionState session, string key, object value)
+        public static void SetDataToSession<T>(this HttpSessionStateBase session, string key, object value)
         {
-            session[key] = value;
+            if (session[key] != null) session[key] = value;
+            else session.Add(key, value);
         }
     }
 }

@@ -61,17 +61,16 @@ namespace BP.Service.Providers.Authentication
             return methodResults;
         }
 
-        public async Task<MethodResults> ActivateAccount(ActivateEmailModel model)
+        public async Task<MethodResults> ActivateAccount(ActivateEmailModel model, string IPAddress)
         {
             var methodResults = await _account.ActivateAccount(model, _context);
-            await WorkerLogAttemptActivate(methodResults);
+            await WorkerLogAttemptActivate(methodResults, IPAddress);
             return methodResults;
         }
 
-        public async Task WorkerLogAttemptActivate(MethodResults results)
+        public async Task WorkerLogAttemptActivate(MethodResults results, string IPAddress)
         {
             var subject = "Account Activation";
-            var IPAddress = System.Web.HttpUtility.HtmlEncode(System.Web.HttpContext.Current.Request.UserHostAddress);
             var message = results.Success ?
                 $"Successful account activation for {results.Message} on {IPAddress}" :
                 $"Unsuccessful activation attempt for userID {results.ID} on {IPAddress}";

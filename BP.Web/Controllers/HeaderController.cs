@@ -21,7 +21,7 @@ namespace BP.Web.Controllers
         [Route("Header/Navigation")]
         public PartialViewResult Navigation()
         {
-            UserVM = _user.LoggedInUser().Result;
+            UserVM = _user.LoggedInUser(HttpContext.Session, Server.HtmlEncode(Request.UserHostAddress)).Result;
             return PartialView("partials/navigation", UserVM);
         }
 

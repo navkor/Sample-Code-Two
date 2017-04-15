@@ -21,13 +21,15 @@
                 var nameText = string.IsNullOrEmpty(Model.UserName) ?
                     Model.EmailAddress : Model.UserName;
                 var linkText = $"Hello {nameText} !";
-                using (Html.BeginForm("LogOff", "Identity", new { area = "Auth" },  FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+                using (Html.BeginForm("LogOff", "Identity", new { area = "Auth" }, FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
                 {
                     @Html.AntiForgeryToken()
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>@Html.ActionLink(linkText, "Index", "Manage", routeValues: null, htmlAttributes: new { })</li>
-                    </ul>
-                }
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>@Html.ActionLink(linkText, "Index", "Manage", routeValues: new { area = "Users" }, htmlAttributes: new { id = "identityLink" })</li>
+                            <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
+                        </ul>
+
+                    }
             }
             else
             {

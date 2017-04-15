@@ -11,11 +11,13 @@ namespace BP.Web.Areas.Auth.Controllers
         #region MyAccount Controller
         RegistrationProvider _provider;
         LoginProvider _login;
+        UserProvider _user;
         SMTPProvider _smtp;
         public IdentityController()
         {
             _provider = new RegistrationProvider();
             _smtp = new SMTPProvider();
+            _user = new UserProvider();
             _login = new LoginProvider();
         }
 
@@ -60,7 +62,7 @@ namespace BP.Web.Areas.Auth.Controllers
             {
                 ID = id ?? 0,
                 ActivateString = code
-            });
+            }, Server.HtmlEncode(Request.UserHostAddress)).ConfigureAwait(continueOnCapturedContext: false);
             if (methodResults.Success) return View("ActivateSuccessful");
             return View("ActivationFailed");
         }
@@ -73,7 +75,7 @@ namespace BP.Web.Areas.Auth.Controllers
             if (ModelState.IsValid)
             {
                 // everything is good, so let's continue
-                var methodResults = await _provider.RegisteringAccount(pullModel);
+                var methodResults = await _provider.RegisteringAccount(pullModel).ConfigureAwait(continueOnCapturedContext: false);
                 if (methodResults.Success)
                 {
                     // let's get the message sent to their email with the activation code
@@ -111,7 +113,7 @@ namespace BP.Web.Areas.Auth.Controllers
             if (ModelState.IsValid)
             {
                 // everything is good, so let's get crackin'
-                var registration = await _login.LoginAccountStepOne(pullModel);
+                var registration = await _login.LoginAccountStepOne(pullModel).ConfigureAwait(continueOnCapturedContext: false);
                 if (registration.ID > 0)
                 {
                     TempData["salt"] = registration.IdentityAttribute.Salt;
@@ -136,7 +138,7 @@ namespace BP.Web.Areas.Auth.Controllers
             ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             if (ModelState.IsValid)
             {
-                var loggedIn = await _login.LoginAccountStepTwo(pullModel, salt);
+                var loggedIn = await _login.LoginAccountStepTwo(pullModel, salt, HttpContext.Session, Server.HtmlEncode(Request.UserHostAddress)).ConfigureAwait(continueOnCapturedContext: false);
                 if (loggedIn.Registration.ID > 0)
                 {
                     if (pullModel.RememberMe)
@@ -148,12 +150,27 @@ namespace BP.Web.Areas.Auth.Controllers
                         }
                     }
                     return RedirectToAction("Index", "Home", new { area = "" });
+                    
                 }
                 ModelState.AddModelError("", "Login was unsuccessful.  Please try again carefully.  Too many failed attempts will lock your account.");
             }
             pullModel.Password = "";
             TempData["salt"] = salt;
             return View(pullModel);
+        }
+
+        [Route("Auth/Identity/LogOff")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> LogOff()
+        {
+            // first, let's go in a clear out the session value
+            var cookie = await _user.LogUserOff(HttpContext.Session).ConfigureAwait(continueOnCapturedContext: false);
+            if (!cookie.Name.Contains("none"))
+            {
+                Response.SetCookie(cookie);
+            }
+            return RedirectToAction("Index", "Home", new { area = "" });
         }
         #endregion
 
@@ -170,6 +187,11 @@ namespace BP.Web.Areas.Auth.Controllers
                 {
                     _login.Dispose();
                     _login = null;
+                }
+                if (_user != null)
+                {
+                    _user.Dispose();
+                    _user = null;
                 }
             }
             base.Dispose(disposing);

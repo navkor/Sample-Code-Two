@@ -5,29 +5,15 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Google;
 using Owin;
-using BP.Web.Models;
-using System.Web;
-using System.Web.SessionState;
-using Microsoft.Owin.Extensions;
+using sampleLogin.Models;
 
-namespace BP.Web
+namespace sampleLogin
 {
     public partial class Startup
     {
         // For more information on configuring authentication, please visit https://go.microsoft.com/fwlink/?LinkId=301864
         public void ConfigureAuth(IAppBuilder app)
         {
-
-            //// require the session
-            //app.Use((context, next) =>
-            //{
-            //    var httpContext = context.Get<HttpContextBase>(typeof(HttpContextBase).FullName);
-            //    httpContext.SetSessionStateBehavior(SessionStateBehavior.Required);
-            //    return next();
-            //});
-
-            //// To make sure the above `Use` is in the correct position:
-            //app.UseStageMarker(PipelineStage.MapHandler);
             // Configure the db context, user manager and signin manager to use a single instance per request
             app.CreatePerOwinContext(ApplicationDbContext.Create);
             app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);

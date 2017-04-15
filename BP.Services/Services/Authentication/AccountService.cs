@@ -58,7 +58,7 @@ namespace BP.Service.Services.Authentication
                     DateType = passwordSetDateType
                 }
             };
-            var encryptedPassword = await EncryptRegistrationPassword(pullModel.Password, salt);
+            var encryptedPassword = EncryptRegistrationPassword(pullModel.Password, salt);
             var identityAttribute = new IdentityAttribute {
                 UserNames = userNameList.ToList(),
                 Password = encryptedPassword,
@@ -183,14 +183,14 @@ namespace BP.Service.Services.Authentication
         {
             var registration = new Registration();
 
-            registration = await CanLoginWithEmail(pullModel.Email, context);
+            registration = await CanLoginWithEmail(pullModel.Email, context).ConfigureAwait(continueOnCapturedContext: false); 
             if (registration.ID > 0)
             {
                 var registerEntry = context.Entry(registration);
                 // this account has been checked and can be logged in
                 // so now, check against the DB is the password is the same
                 // the salt will be passed from the ViewBag
-                var encryptedPassword = await EncryptRegistrationPassword(pullModel.Password, salt);
+                var encryptedPassword = EncryptRegistrationPassword(pullModel.Password, salt);
                 // now check that this password matched the assigned password for this account
                 if (registration.IdentityAttribute.Password.Equals(encryptedPassword))
                 {
@@ -214,7 +214,7 @@ namespace BP.Service.Services.Authentication
                         registerEntry.Entity.LoginAttribute = loginAttribute;
                     }
                     registerEntry.State = EntityState.Modified;
-                    await context.SaveChangesAsync();
+                    await context.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false); 
                     return registration;
                 } else
                 {
@@ -256,7 +256,7 @@ namespace BP.Service.Services.Authentication
                     };
                     registerEntry.Entity.LoginAttribute.LoginDates.Add(dateTable);
                     registerEntry.State = EntityState.Modified;
-                    await context.SaveChangesAsync();
+                    await context.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
                     return new Registration();
                 }
             }
@@ -268,42 +268,37 @@ namespace BP.Service.Services.Authentication
             var returnValue = new Registration();
 
             // first, let's go get the email entity
-            returnValue = await Task.Run(() => {
-                var email = context.EmailAddresses.FirstOrDefault(x => x.Email.Equals(userName));
-                if (email != null)
+            var email = await context.EmailAddresses.FirstOrDefaultAsync(x => x.Email.Equals(userName)).ConfigureAwait(continueOnCapturedContext: false); 
+            if (email != null)
+            {
+                if (email.Validated)
+                    returnValue = email.ProfileAttribute.Registration;
+            }
+            else
+            {
+                // this email doesn't fit any of the email address
+                // so let's look at user names
+                var userNames = context.UserNames.Where(x => x.NameType.Index == 1000);
+                if (userNames.Any(x => x.Name.Equals(userName)))
                 {
-                    if (email.Validated)
-                        return email.ProfileAttribute.Registration;
-                    else
-                        return new Registration();
+                    var theUserName = await userNames.FirstOrDefaultAsync(x => x.Name.Equals(userName)).ConfigureAwait(continueOnCapturedContext: false); 
+                    returnValue = theUserName.IdentityAttribute.Registration;
                 }
                 else
                 {
-                    // this email doesn't fit any of the email address
-                    // so let's look at user names
-                    var userNames = context.UserNames.Where(x => x.NameType.Index == 1000);
-                    if (userNames.Any(x => x.Name.Equals(userName)))
-                    {
-                        return userNames.FirstOrDefault(x => x.Name.Equals(userName)).IdentityAttribute.Registration;
-                    }
-                    else
-                    {
-                        return new Registration();
-                    }
+                    return new Registration();
                 }
-            });
+            }
 
             return returnValue;
         }
         
         
-        public async Task<string> EncryptRegistrationPassword(string password, string salt)
+        public string EncryptRegistrationPassword(string password, string salt)
         {
             using (var encrypt = new EncryptionHandler())
             {
-                return await Task.Run(() => {
-                    return encrypt.SetPassword(password, salt);
-                });
+                return encrypt.SetPassword(password, salt);
             }
         }
         public void Dispose()

@@ -82,12 +82,24 @@ namespace BP.Service.Providers.Authentication
             return cookieLoginVM;
         }
 
+        public HttpCookie RemoveLoginCOokie()
+        {
+            return RemoveCookie("login");
+        }
+
         public HttpCookie CreateCookie(string name, DateTimeOffset expiration, CookiePullModel pullModel)
         {
             var cookie = new HttpCookie($"{cookiePrefix}{name}");
             cookie["ID"] = pullModel.ID.ToString();
             cookie["Code"] = pullModel.Code;
             cookie.Expires = new DateTime(expiration.Year, expiration.Month, expiration.Day);
+            return cookie;
+        }
+
+        public HttpCookie RemoveCookie(string name)
+        {
+            var cookie = HttpContext.Current.Request.Cookies[$"{cookiePrefix}{name}"];
+            cookie.Expires = DateTime.Now.AddDays(-1);
             return cookie;
         }
 

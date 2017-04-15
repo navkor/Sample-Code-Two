@@ -40,11 +40,10 @@ namespace BP.Service.Providers.Authentication
         /*
             So, let's return a logged in user, shall we 
         */
-        public async Task<LoggedInUserVM> LoggedInUser()
+        public async Task<LoggedInUserVM> LoggedInUser(HttpSessionStateBase session, string IPAddress)
         {
             var vm = new LoggedInUserVM();
             // first, let's see if this user is in the session
-            var session = HttpContext.Current.Session;
             var registration = new Registration();
             if (session.Count > 0)
             {
@@ -54,24 +53,52 @@ namespace BP.Service.Providers.Authentication
                 {
                     if (userID > 0)
                     {
-                        registration = await _context.Registrations.FindAsync(userID);
+                        registration = await _context.Registrations.FindAsync(userID).ConfigureAwait(continueOnCapturedContext: false);
                         var user =  retrieveViewModel(registration);
                         return user;
                     }
                 }
             }
             // then, let's see if there is a cookie
-            var cookieLVM = await _cookie.RetrieveLoginCookie();
+            var cookieLVM = await _cookie.RetrieveLoginCookie().ConfigureAwait(continueOnCapturedContext: false);
             if (cookieLVM.userID > 0)
             {
                 // this user does have a log in cookie and is able to login using it
                 // so, now we need to log them in as a cookie log in rather than a regular log in
-                registration = await _context.Registrations.FindAsync(cookieLVM.userID);
+                registration = await _context.Registrations.FindAsync(cookieLVM.userID).ConfigureAwait(continueOnCapturedContext: false);
                 vm = retrieveViewModel(registration);
-                await _login.LoginUserFromCookie(registration, vm.EmailAddress);
+                await _login.LoginUserFromCookie(registration, vm.EmailAddress, IPAddress).ConfigureAwait(continueOnCapturedContext: false);
             }
 
             return vm;
+        }
+
+        /*
+            So, let's go ahead and log this user off 
+        */
+        public async Task<HttpCookie> LogUserOff(HttpSessionStateBase session)
+        {
+            // first, go get the session and clear out the userID
+            if (session.Count > 0)
+            {
+                // of course, it should be
+                int userID = 0;
+                if (int.TryParse(session.GetDataFromSession<int>("userID").ToString(), out userID))
+                {
+                    if (userID > 0)
+                    {
+                        session.Clear();
+                    }
+                }
+            }
+            var cookieLVM = await _cookie.RetrieveLoginCookie();
+            var cookie = new HttpCookie("none");
+            if (cookieLVM.userID > 0)
+            {
+                // they are also using a cookie to log in, so let's clear that out!
+                cookie = _cookie.RemoveLoginCOokie();
+            }
+            return cookie;
         }
 
         internal LoggedInUserVM retrieveViewModel(Registration registration)
@@ -85,7 +112,6 @@ namespace BP.Service.Providers.Authentication
                 UserID = registration.ID,
                 UserRole = registration.AccountAttribute.UserRole.Name
             };
-            return vm;
         }
 
         internal string RetrieveEmailAddress (Registration registration)
