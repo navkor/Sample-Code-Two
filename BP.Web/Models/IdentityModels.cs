@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
+using System.Collections.Generic;
 
 namespace BP.Web.Models
 {
@@ -18,10 +19,32 @@ namespace BP.Web.Models
         }
     }
 
+    public class ApplicationRole : IdentityRole
+    {
+        public ApplicationRole()
+        {
+
+        }
+        public ApplicationRole(string name) : this()
+        {
+            Name = name;
+        }
+        public int Index { get; set; } = 1;
+        public virtual RoleGroup RoleGroup { get; set; }
+    }
+
+    public class RoleGroup
+    {
+        public int ID { get; private set; }
+        public string Name { get; set; }
+        public int Index { get; set; }
+        public virtual ICollection<ApplicationRole> ApplicationRoles { get; set; }
+    }
+
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext()
-            : base("DefaultConnection", throwIfV1Schema: false)
+            : base("BPMVCAuthContext", throwIfV1Schema: false)
         {
         }
 

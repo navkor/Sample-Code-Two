@@ -8,8 +8,7 @@
     @Scripts.Render("~/bundles/modernizr")
 
 </head>
-<body>
-    @*
+<body>    
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -29,8 +28,8 @@
                 @Html.Partial("_LoginPartial")
             </div>
         </div>
-    </div>*@
-    @Html.Action("Navigation", "Header", new { area = "" })
+    </div>
+   @* @Html.Action("Navigation", "Header", new { area = "" })*@
     <div class="container body-content">
         @RenderBody()
         <hr />

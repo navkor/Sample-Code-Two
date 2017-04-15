@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using BP.Web.Models;
+using BP.Service.Providers.Logger;
 
 namespace BP.Web.Controllers
 {
@@ -17,15 +18,31 @@ namespace BP.Web.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        CoreLoggerProvider _logger;
+        private ApplicationRoleManager _roleManager;
 
         public AccountController()
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
+            RoleManager = roleManager;
+            _logger = new CoreLoggerProvider();
+        }
+
+        public ApplicationRoleManager RoleManager
+        {
+            get
+            {
+                return _roleManager ?? HttpContext.GetOwinContext().Get<ApplicationRoleManager>();
+            }
+            private set
+            {
+                _roleManager = value;
+            }
         }
 
         public ApplicationSignInManager SignInManager
@@ -58,6 +75,7 @@ namespace BP.Web.Controllers
         public ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             return View();
         }
 
@@ -68,24 +86,45 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
+            var ipAddress = Server.HtmlEncode(Request.UserHostAddress);
+            var subject = "Account Login";
+            var instigator = "Login System";
+            var system = "Account Controller";
+            ViewBag.IPAddress = ipAddress;
+            if (model.step == 1)
+            {
+                if (!string.IsNullOrEmpty(model.Email))
+                {
+                    if (UserManager.Users.Any(y => y.UserName == model.Email))
+                    {
+                        model.step = 2;
+                        return View(model);
+                    }
+                }
+                ModelState.AddModelError(nameof(LoginViewModel.Email), "Please include a username before continuing.");
+                return View(model);
+            }
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
-
-            // This doesn't count login failures towards account lockout
-            // To enable password failures to trigger account lockout, change to shouldLockout: true
-            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
+            
+            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: true);
             switch (result)
             {
                 case SignInStatus.Success:
+                    await _logger.CreateNewLog($"{model.Email} successfully logged in using Username/Password from {ipAddress}", subject, instigator, system);
                     return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:
+                    await _logger.CreateNewLog($"{model.Email} account locked out using Username/Password from {ipAddress}", subject, instigator, system);
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
+                    await _logger.CreateNewLog($"{model.Email} requires verification before logging in using Username/Password from {ipAddress}", subject, instigator, system);
                     return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
                 case SignInStatus.Failure:
                 default:
+                    await _logger.CreateNewLog($"{model.Email} failed log in using Username/Password from {ipAddress}", subject, instigator, system);
+                    ViewBag.Message = "Please be careful!  Too many failed attemps will lock your account.";
                     ModelState.AddModelError("", "Invalid login attempt.");
                     return View(model);
             }
@@ -96,6 +135,7 @@ namespace BP.Web.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> VerifyCode(string provider, string returnUrl, bool rememberMe)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             // Require that the user has already logged in via username/password or external login
             if (!await SignInManager.HasBeenVerifiedAsync())
             {
@@ -111,6 +151,7 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> VerifyCode(VerifyCodeViewModel model)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -139,6 +180,7 @@ namespace BP.Web.Controllers
         [AllowAnonymous]
         public ActionResult Register()
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             return View();
         }
 
@@ -149,21 +191,22 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+                   // await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
+
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
-                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-
-                    return RedirectToAction("Index", "Home");
+                    string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                    await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
+                    ViewBag.RegisteredEmail = model.Email;
+                    return View("RegistrationSuccessful");
                 }
                 AddErrors(result);
             }
@@ -177,6 +220,7 @@ namespace BP.Web.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(string userId, string code)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             if (userId == null || code == null)
             {
                 return View("Error");
@@ -190,6 +234,7 @@ namespace BP.Web.Controllers
         [AllowAnonymous]
         public ActionResult ForgotPassword()
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             return View();
         }
 
@@ -200,6 +245,7 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             if (ModelState.IsValid)
             {
                 var user = await UserManager.FindByNameAsync(model.Email);
@@ -211,10 +257,10 @@ namespace BP.Web.Controllers
 
                 // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                 // Send an email with this link
-                // string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-                // var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);		
-                // await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                // return RedirectToAction("ForgotPasswordConfirmation", "Account");
+                string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
+                var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste the link to your URL if your email does not allow you to clink on links.");
+                return RedirectToAction("ForgotPasswordConfirmation", "Account");
             }
 
             // If we got this far, something failed, redisplay form
@@ -226,6 +272,7 @@ namespace BP.Web.Controllers
         [AllowAnonymous]
         public ActionResult ForgotPasswordConfirmation()
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             return View();
         }
 
@@ -234,6 +281,7 @@ namespace BP.Web.Controllers
         [AllowAnonymous]
         public ActionResult ResetPassword(string code)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             return code == null ? View("Error") : View();
         }
 
@@ -244,6 +292,7 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ResetPassword(ResetPasswordViewModel model)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -268,6 +317,7 @@ namespace BP.Web.Controllers
         [AllowAnonymous]
         public ActionResult ResetPasswordConfirmation()
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             return View();
         }
 
@@ -278,6 +328,7 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             // Request a redirect to the external login provider
             return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
@@ -287,6 +338,7 @@ namespace BP.Web.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> SendCode(string returnUrl, bool rememberMe)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             var userId = await SignInManager.GetVerifiedUserIdAsync();
             if (userId == null)
             {
@@ -304,6 +356,7 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> SendCode(SendCodeViewModel model)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             if (!ModelState.IsValid)
             {
                 return View();
@@ -322,6 +375,7 @@ namespace BP.Web.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
             if (loginInfo == null)
             {
@@ -354,6 +408,7 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             if (User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("Index", "Manage");
@@ -400,6 +455,7 @@ namespace BP.Web.Controllers
         [AllowAnonymous]
         public ActionResult ExternalLoginFailure()
         {
+            ViewBag.IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             return View();
         }
 
@@ -417,6 +473,17 @@ namespace BP.Web.Controllers
                 {
                     _signInManager.Dispose();
                     _signInManager = null;
+                }
+
+                if (_roleManager != null)
+                {
+                    _roleManager.Dispose();
+                    _roleManager = null;
+                }
+                if (_logger != null)
+                {
+                    _logger.Dispose();
+                    _logger = null;
                 }
             }
 

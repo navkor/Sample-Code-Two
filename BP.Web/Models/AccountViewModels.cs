@@ -50,8 +50,9 @@ namespace BP.Web.Models
     {
         [Required]
         [Display(Name = "Email")]
-        [EmailAddress]
         public string Email { get; set; }
+
+        public int step { get; set; } = 1;
 
         [Required]
         [DataType(DataType.Password)]
