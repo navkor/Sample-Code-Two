@@ -7,6 +7,8 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Google.Apis.Gmail.v1;
 using Google.Apis.Gmail.v1.Data;
+using System.Net.Mail;
+using System.Text;
 
 namespace BP.Service.Providers.Core
 {
@@ -31,9 +33,15 @@ namespace BP.Service.Providers.Core
         }
         public async Task SendNewGmail(string to, string subject, string message)
         {
-            Message m = new Message {
-                
-            };
+            MailMessage smtpMail = new MailMessage(
+                from: "michael@basicallyprepared.com",
+                to: to,
+                subject: subject,
+                body: message
+            );
+            smtpMail.IsBodyHtml = true;
+            smtpMail.BodyEncoding = Encoding.UTF8;
+            await _service.SendGmailMessage(smtpMail);
         }
         // Flag: Has Dispose already been called?
         bool disposed = false;

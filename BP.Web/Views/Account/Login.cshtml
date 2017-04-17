@@ -15,6 +15,10 @@
                     @Model.Warning
                 </span>
             }
+            @if(ViewBag.Message != null)
+            {
+                <p class="alert-danger">@ViewBag.Message</p>
+            }
             @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl, step = Model.step }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
             {
                 @Html.AntiForgeryToken()

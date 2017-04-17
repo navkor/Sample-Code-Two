@@ -158,7 +158,12 @@ namespace BP.Web.Controllers
                 case SignInStatus.Failure:
                 default:
                     await Logger.CreateNewLog($"{model.Email} failed log in using Username/Password from {ipAddress}", subject, instigator, system);
-                    ViewBag.Message = "Please be careful!  Too many failed attemps will lock your account.";
+                    model.partialView = "partials/loginTwoPartial";
+                    model.pageTitle = "Login Step Two";
+                    model.Instructions = "Now enter your password below.";
+                    ViewBag.Message = "Warning!  Please double check your information before continuing...";
+                    model.Warning = "Be careful!  Too many wrong moves will lock out your account.";
+                    model.buttonValue = "Log in";
                     ModelState.AddModelError("", "Invalid login attempt.");
                     return View(model);
             }

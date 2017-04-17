@@ -21,17 +21,21 @@ namespace BP.Service.Services.Core
         SendGridMessage _message;
         SmtpWorker _worker;
         SendGridClient _client;
+        SmtpClient _smtp;
         CoreLoggerProvider _provider;
         GmailService _service;
         public SMTPService()
         {
-
-            var gmailAPIKey = Environment.GetEnvironmentVariable("Gmail_API_Secret");
-            _service = new GmailService(new Google.Apis.Services.BaseClientService.Initializer
-            {
-                ApiKey = gmailAPIKey,
-                ApplicationName = "Basically Prepared Email"
-            });
+            var gmailPassword = "oqczmzbsxxwnwgvb";
+            var gmailUserName = "michael@navkor.com";
+            var gmailPort = 587;
+            var gmailHost = "smtp-relay.gmail.com";
+            var smtp = new SmtpClient(gmailHost, gmailPort);
+            var smtpCredentials = new System.Net.NetworkCredential(gmailUserName, gmailPassword);
+            smtp.EnableSsl = true;
+            smtp.UseDefaultCredentials = false;
+            smtp.Credentials = smtpCredentials;
+            _smtp = smtp;
         }
         public SMTPService(SendGridMessage message)
         {
@@ -41,9 +45,9 @@ namespace BP.Service.Services.Core
             _message = message;
             _provider = new CoreLoggerProvider();
         }
-        private async Task<Message> SendGmailMessage(Message message, string To)
+        public async Task SendGmailMessage(MailMessage message)
         {
-            return await _service.Users.Messages.Send(message, To).ExecuteAsync();
+            await _smtp.SendMailAsync(message);
         }
         bool mailSent = false;
         private async Task SendCompletedCallback(string purpose, bool success)

@@ -9,6 +9,7 @@ using Microsoft.Owin.Security;
 using BP.Web.Models;
 using System.Collections.Generic;
 using BP.Service.Providers.Logger;
+using BP.Service.Providers.Core;
 
 namespace BP.Web.Controllers
 {
@@ -19,17 +20,31 @@ namespace BP.Web.Controllers
         private ApplicationUserManager _userManager;
         CoreLoggerProvider _logger;
         private ApplicationRoleManager _roleManager;
+        private SMTPProvider _smtp;
 
         public ManageController()
         {
         }
 
-        public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager, CoreLoggerProvider logger)
+        public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager, CoreLoggerProvider logger, SMTPProvider smtp)
         {
             UserManager = userManager;
             SignInManager = signInManager;
             RoleManager = roleManager;
-            _logger = logger;
+            Logger = logger;
+            SMTP = smtp;
+        }
+
+        public SMTPProvider SMTP
+        {
+            get
+            {
+                return _smtp ?? new SMTPProvider();
+            }
+            private set
+            {
+                _smtp = value;
+            }
         }
         public CoreLoggerProvider Logger
         {
@@ -155,18 +170,25 @@ namespace BP.Web.Controllers
             // we need to role of the current logged in user.  because that user cannot give someone a role higher than their own...that's rule # 1
             var userId = User.Identity.GetUserId();
             var rolesList = RoleManager.Roles.OrderBy(y => y.Index).ToList();
+            var model = new CreateUser {
+                Roles = RolesList(rolesList, userId)
+            };
+            return View(model);
+        }
+
+        private IEnumerable<SelectListItem> RolesList(IEnumerable<ApplicationRole> rolesList, string userId)
+        {
             var currentIndex = 0;
-            foreach(var role in rolesList)
+            foreach (var role in rolesList)
             {
                 if (UserManager.IsInRole(userId, role.Name)) currentIndex = role.Index;
             }
-            var model = new CreateUser {
-                Roles = rolesList.Where(x => x.Index <= currentIndex).OrderBy(y => y.Index).Select(n => new SelectListItem {
-                    Text = n.Name,
-                    Value = n.Name
-                })
-            };
-            return View(model);
+            var returnList = rolesList.Where(x => x.Index <= currentIndex).OrderBy(y => y.Index).Select(n => new SelectListItem
+            {
+                Text = n.Name,
+                Value = n.Name
+            });
+            return returnList;
         }
 
         [HttpPost]
@@ -188,19 +210,22 @@ namespace BP.Web.Controllers
                     UserName = pullModel.UserName,
                     Email = pullModel.EmailAddress
                 };
-                var result = await UserManager.CreateAsync(user);
+                var result = await UserManager.CreateAsync(user, pullModel.PassWord);
                 if (result.Succeeded)
                 {
                     await UserManager.AddToRoleAsync(user.Id, pullModel.SelectedRole);
                     await Logger.CreateNewLog($"Successfully created user: {pullModel.UserName} from IPAddress {IPAddress}.", subject, instigator, system);
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
+                    //  await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
+                    await SMTP.SendNewGmail(user.Email, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
                     return View("CreationSuccessful");
                 }
                 AddErrors(result);
             }
-
+            var userId = User.Identity.GetUserId();
+            var rolesList = RoleManager.Roles.OrderBy(y => y.Index).ToList();
+            pullModel.Roles = RolesList(rolesList, userId);
             ViewBag.IPAddress = IPAddress;
             return View(pullModel);
         }
@@ -435,15 +460,20 @@ namespace BP.Web.Controllers
                 _userManager = null;
             }
 
-            if (_roleManager != null)
+            if (disposing && _roleManager != null)
             {
                 _roleManager.Dispose();
                 _roleManager = null;
             }
-            if (_logger != null)
+            if (disposing && _logger != null)
             {
                 _logger.Dispose();
                 _logger = null;
+            }
+            if (disposing && _smtp != null)
+            {
+                _smtp.Dispose();
+                _smtp = null;
             }
 
             base.Dispose(disposing);
