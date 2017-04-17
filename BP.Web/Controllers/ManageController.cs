@@ -7,6 +7,8 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using BP.Web.Models;
+using System.Collections.Generic;
+using BP.Service.Providers.Logger;
 
 namespace BP.Web.Controllers
 {
@@ -15,15 +17,42 @@ namespace BP.Web.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        CoreLoggerProvider _logger;
+        private ApplicationRoleManager _roleManager;
 
         public ManageController()
         {
         }
 
-        public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
+        public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager, CoreLoggerProvider logger)
         {
             UserManager = userManager;
             SignInManager = signInManager;
+            RoleManager = roleManager;
+            _logger = logger;
+        }
+        public CoreLoggerProvider Logger
+        {
+            get
+            {
+                return _logger ?? new CoreLoggerProvider();
+            }
+            private set
+            {
+                _logger = value;
+            }
+        }
+
+        public ApplicationRoleManager RoleManager
+        {
+            get
+            {
+                return _roleManager ?? HttpContext.GetOwinContext().Get<ApplicationRoleManager>();
+            }
+            private set
+            {
+                _roleManager = value;
+            }
         }
 
         public ApplicationSignInManager SignInManager
@@ -99,6 +128,82 @@ namespace BP.Web.Controllers
             return RedirectToAction("ManageLogins", new { Message = message });
         }
 
+        //
+        // Get: /Manager/Users
+        [Route("Manage/Users")]
+        [RoleGroupAuthorize(GroupIndex = 700)]
+        public ActionResult Users()
+        {
+            var users = UserManager.Users.Select(x => new UserModels {
+                UserId = x.Id,
+                UserName = x.UserName,
+                EmailAddress = x.Email,
+                EmailVerified = x.EmailConfirmed
+            }).ToList();
+
+            return View(users);
+        }
+
+        //
+        // Get: /Manage/CreateUser
+        [Route("Manage/CreateUsers")]
+        [RoleGroupAuthorize(GroupIndex = 700)]
+        public ActionResult CreateUsers()
+        {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            // we need to role of the current logged in user.  because that user cannot give someone a role higher than their own...that's rule # 1
+            var userId = User.Identity.GetUserId();
+            var rolesList = RoleManager.Roles.OrderBy(y => y.Index).ToList();
+            var currentIndex = 0;
+            foreach(var role in rolesList)
+            {
+                if (UserManager.IsInRole(userId, role.Name)) currentIndex = role.Index;
+            }
+            var model = new CreateUser {
+                Roles = rolesList.Where(x => x.Index <= currentIndex).OrderBy(y => y.Index).Select(n => new SelectListItem {
+                    Text = n.Name,
+                    Value = n.Name
+                })
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [Route("Manage/CreateUsers")]
+        [ValidateAntiForgeryToken]
+        [RoleGroupAuthorize(GroupIndex = 700)]
+        public async Task<ActionResult> CreateUsers(CreateUser pullModel)
+        {
+            // they are creating a new user
+            // so we gotta do things a little different for this one!
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            var subject = "Account Registration";
+            var instigator = "User Manager";
+            var system = "Manage Controller";
+            if (ModelState.IsValid)
+            {
+                // they are ready to go!
+                var user = new ApplicationUser {
+                    UserName = pullModel.UserName,
+                    Email = pullModel.EmailAddress
+                };
+                var result = await UserManager.CreateAsync(user);
+                if (result.Succeeded)
+                {
+                    await UserManager.AddToRoleAsync(user.Id, pullModel.SelectedRole);
+                    await Logger.CreateNewLog($"Successfully created user: {pullModel.UserName} from IPAddress {IPAddress}.", subject, instigator, system);
+                    string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                    await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
+                    return View("CreationSuccessful");
+                }
+                AddErrors(result);
+            }
+
+            ViewBag.IPAddress = IPAddress;
+            return View(pullModel);
+        }
         //
         // GET: /Manage/AddPhoneNumber
         public ActionResult AddPhoneNumber()
@@ -328,6 +433,17 @@ namespace BP.Web.Controllers
             {
                 _userManager.Dispose();
                 _userManager = null;
+            }
+
+            if (_roleManager != null)
+            {
+                _roleManager.Dispose();
+                _roleManager = null;
+            }
+            if (_logger != null)
+            {
+                _logger.Dispose();
+                _logger = null;
             }
 
             base.Dispose(disposing);

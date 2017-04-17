@@ -81,6 +81,7 @@ namespace BP.Web.Controllers
                 _userManager = value;
             }
         }
+        
 
         //
         // GET: /Account/Login
@@ -127,6 +128,8 @@ namespace BP.Web.Controllers
                         model.step = 2;
                         return View(model);
                     }
+                    ModelState.AddModelError("", "There is a problem logging you in.");
+                    return View(model);
                 }
                 ModelState.AddModelError(nameof(LoginViewModel.Email), "Please include a username before continuing.");
                 return View(model);
@@ -167,7 +170,7 @@ namespace BP.Web.Controllers
             if (userName.Contains("@"))
             {
                 var user = await UserManager.FindByEmailAsync(userName);
-                returnValue = user.UserName;
+                returnValue = user?.UserName ?? "";
             }
             return returnValue;
         }

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Mail;
+using Google.Apis.Gmail.v1;
+using Google.Apis.Gmail.v1.Data;
 using System.Runtime.InteropServices;
 using SendGrid;
 using SendGrid.Helpers.Mail;
@@ -20,9 +22,16 @@ namespace BP.Service.Services.Core
         SmtpWorker _worker;
         SendGridClient _client;
         CoreLoggerProvider _provider;
+        GmailService _service;
         public SMTPService()
         {
-            
+
+            var gmailAPIKey = Environment.GetEnvironmentVariable("Gmail_API_Secret");
+            _service = new GmailService(new Google.Apis.Services.BaseClientService.Initializer
+            {
+                ApiKey = gmailAPIKey,
+                ApplicationName = "Basically Prepared Email"
+            });
         }
         public SMTPService(SendGridMessage message)
         {
@@ -31,6 +40,10 @@ namespace BP.Service.Services.Core
             _worker = new SmtpWorker();
             _message = message;
             _provider = new CoreLoggerProvider();
+        }
+        private async Task<Message> SendGmailMessage(Message message, string To)
+        {
+            return await _service.Users.Messages.Send(message, To).ExecuteAsync();
         }
         bool mailSent = false;
         private async Task SendCompletedCallback(string purpose, bool success)
@@ -74,6 +87,7 @@ namespace BP.Service.Services.Core
                 handle.Dispose();
                 _worker.Dispose();
                 _provider.Dispose();
+                _service.Dispose();
             }
             disposed = true;
         }

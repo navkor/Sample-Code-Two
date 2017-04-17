@@ -44,10 +44,7 @@ namespace System.Web.Mvc
     public class RoleGroupAuthorizeAttribute : AuthorizeAttribute
     {
         public int GroupIndex { get; set; }
-        public RoleGroupAuthorizeAttribute()
-        {
-
-        }
+        public RoleGroupAuthorizeAttribute() { }
 
         public override void OnAuthorization(AuthorizationContext filterContext)
         {

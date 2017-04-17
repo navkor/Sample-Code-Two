@@ -1,0 +1,29 @@
+﻿
+@{
+    ViewBag.Title = "Creation Successful";
+}
+
+<h2>Creation Successful</h2>
+
+<h4>User Created!</h4>
+
+<p>Make sure the user understands a few things before you go...</p>
+<ul>
+    <li>
+        Make sure they know their temporary password
+    </li>
+    <li>
+        Make sure they know to verify their email address
+    </li>
+    <li>
+        Make sure they know to keep their password safe at all times
+    </li>
+    <li>
+        They are still responsible for adhereing to the terms and conditions of the website
+    </li>
+    <li>
+        Thank them for registering an account with us today!
+    </li>
+</ul>
+<br />
+@Html.ActionLink("Back to list", "Users", new { controller = "Manage", area = "" })

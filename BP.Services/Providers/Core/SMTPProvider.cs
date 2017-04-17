@@ -5,6 +5,8 @@ using SendGrid.Helpers.Mail;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Google.Apis.Gmail.v1;
+using Google.Apis.Gmail.v1.Data;
 
 namespace BP.Service.Providers.Core
 {
@@ -26,6 +28,12 @@ namespace BP.Service.Providers.Core
             message.AddContent(MimeType.Html, body);
             _service = new SMTPService(message);
             await _service.SendMailAsync(purpose);
+        }
+        public async Task SendNewGmail(string to, string subject, string message)
+        {
+            Message m = new Message {
+                
+            };
         }
         // Flag: Has Dispose already been called?
         bool disposed = false;

@@ -1,0 +1,54 @@
+﻿@model IEnumerable<BP.Web.Models.UserModels>
+@{
+    ViewBag.Title = "Users";
+}
+
+<h2>Registered Users</h2>
+
+@Html.ActionLink("Create a new user", "CreateUsers", new { area = "", controller = "Manage" })
+
+<hr />
+<div class="container"><div class="row">
+    <div class="col-md-2">
+        <strong>User Name</strong>
+    </div>
+    <div class="col-md-3">
+        <strong>Email Address</strong>
+    </div>
+    <div class="col-md-2">
+        <strong>Email Verified</strong>
+    </div>
+    <div class="col-md-4">
+    </div>
+</div>
+
+    @foreach (var user in Model.Select((value, index) => new { value, index }))
+    {
+        var classString = "background-color: gainsboro";
+        if (user.index % 2 == 0)
+        {
+            classString = "";
+        }
+        <div class="row" style="@classString">
+            <div class="col-md-2">
+                @user.value.UserName
+            </div>
+            <div class="col-md-4">
+                @user.value.EmailAddress
+            </div>
+            <div class="col-md-1">
+                @if (user.value.EmailVerified)
+                {
+                    <i class="fa fa-check" aria-hidden="true"></i>
+                }
+            </div>
+            <div class="col-md-4">
+                <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                    @Html.ActionLink("Details", "UserDetails", new { controller = "manage", area = "", id = user.value.UserId }, new { @class = "btn btn-primary" })
+                    @Html.ActionLink("Edit", "EditUser", new { controller = "manage", area = "", id = user.value.UserId }, new { @class = "btn btn-secondary" })
+                    @Html.ActionLink("Delete", "DeleteUser", new { controller = "manage", area = "", id = user.value.UserId }, new { @class = "btn btn-danger" })
+                </div>
+            </div>
+        </div>
+    }
+</div>
