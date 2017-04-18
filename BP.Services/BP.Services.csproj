@@ -93,15 +93,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\Authentication\LoginProvider.cs" />
-    <Compile Include="Providers\Authentication\RegistrationProvider.cs" />
-    <Compile Include="Providers\Authentication\UserProvider.cs" />
     <Compile Include="Providers\Core\CookieProvider.cs" />
     <Compile Include="Providers\Core\SMTPProvider.cs" />
     <Compile Include="Providers\Logger\CoreLoggerProvider.cs" />
-    <Compile Include="Services\Authentication\AccountService.cs" />
-    <Compile Include="Services\Authentication\LoginService.cs" />
-    <Compile Include="Services\Authentication\RegistrationService.cs" />
     <Compile Include="Services\Core\CookieService.cs" />
     <Compile Include="Services\Core\SMTPService.cs" />
     <Compile Include="Services\Logger\CoreLoggerServices.cs" />

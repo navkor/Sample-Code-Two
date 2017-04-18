@@ -55,19 +55,19 @@ namespace BP.Web
             //    clientId: "",
             //    clientSecret: "");
 
-            //app.UseTwitterAuthentication(
-            //   consumerKey: "",
-            //   consumerSecret: "");
+            app.UseTwitterAuthentication(
+               consumerKey: "3RVRXmNBBLCMyd2tXZcqO9loa",
+               consumerSecret: "zdyEmAkI3uIOlBoHtiTWIyWhnBDcyPjsbbPpwCtfircIPZnGqZ");
 
-            //app.UseFacebookAuthentication(
-            //   appId: "",
-            //   appSecret: "");
+            app.UseFacebookAuthentication(
+               appId: "122575158082318",
+               appSecret: "0d58dbaf3f64b65297fd290fae061d85");
 
-            //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
-            //{
-            //    ClientId = "",
-            //    ClientSecret = ""
-            //});
+            app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
+            {
+                ClientId = "921322109010-9uac5qfeoooqkqr2bjg50r49fpg8b5pl.apps.googleusercontent.com",
+                ClientSecret = "xcm_E8FxFy9yY_oRnGr9QldO"
+            });
         }
     }
 }

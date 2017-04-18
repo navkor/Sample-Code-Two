@@ -18,7 +18,7 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
-    <IISExpressSSLPort />
+    <IISExpressSSLPort>44371</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -243,8 +243,8 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Areas\Auth\AuthAreaRegistration.cs" />
-    <Compile Include="Areas\Auth\Controllers\IdentityController.cs" />
+    <Compile Include="Areas\Users\Controllers\RegisteredController.cs" />
+    <Compile Include="Areas\Users\UsersAreaRegistration.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HeaderController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -276,6 +276,9 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\font-awesome.css" />
     <Content Include="Content\font-awesome.min.css" />
+    <Content Include="Content\images\gui\loginFacebook.png" />
+    <Content Include="Content\images\gui\loginGoogle.png" />
+    <Content Include="Content\images\gui\loginTwitter.png" />
     <Content Include="Content\themes\base\accordion.css" />
     <Content Include="Content\themes\base\all.css" />
     <Content Include="Content\themes\base\autocomplete.css" />
@@ -333,20 +336,16 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
-    <Content Include="Areas\Auth\Views\web.config" />
-    <Content Include="Areas\Auth\Views\_ViewStart.cshtml" />
-    <Content Include="Areas\Auth\Views\Shared\_Layout.cshtml" />
-    <Content Include="Areas\Auth\Views\Identity\Register.cshtml" />
-    <Content Include="Areas\Auth\Views\Identity\Login.cshtml" />
-    <Content Include="Areas\Auth\Views\Identity\Login2.cshtml" />
-    <Content Include="Areas\Auth\Views\Identity\ActivationFailed.cshtml" />
-    <Content Include="Areas\Auth\Views\Identity\ActivateSuccessful.cshtml" />
-    <Content Include="Areas\Auth\Views\Identity\AccountCreated.cshtml" />
     <Content Include="fonts\FontAwesome.otf" />
     <Content Include="fonts\fontawesome-webfont.woff2" />
     <Content Include="fonts\fontawesome-webfont.woff" />
     <Content Include="fonts\fontawesome-webfont.ttf" />
     <Content Include="fonts\fontawesome-webfont.eot" />
+    <Content Include="Areas\Users\Views\web.config" />
+    <Content Include="Areas\Users\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\Users\Views\Shared\_Layout.cshtml" />
+    <Content Include="Areas\Users\Views\Registered\Index.cshtml" />
+    <Content Include="Areas\Users\Views\Registered\Profile.cshtml" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -407,10 +406,12 @@
     <Content Include="Views\Manage\Users.cshtml" />
     <Content Include="Views\Manage\CreateUsers.cshtml" />
     <Content Include="Views\Manage\CreationSuccessful.cshtml" />
+    <Content Include="Views\Shared\navigationPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Areas\Auth\Models\" />
+    <Folder Include="Areas\Users\Models\" />
+    <Folder Include="Views\partials\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -473,7 +474,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>65327</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:65327/</IISUrl>
+          <IISUrl>https://localhost:44371/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

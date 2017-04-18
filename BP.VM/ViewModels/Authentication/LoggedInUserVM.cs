@@ -8,10 +8,10 @@ namespace BP.VM.ViewModels.Authentication
 {
     public class LoggedInUserVM
     {
-        public int UserID { get; set; }
-        public string UserName { get; set; }
-        public string EmailAddress { get; set; }
+        public string UserID { get; set; }
         public string UserRole { get; set; }
         public int RoleIndex { get; set; }
+        public int RoleGroupIndex { get; set; }
+        public bool HasPassword { get; set; }
     }
 }

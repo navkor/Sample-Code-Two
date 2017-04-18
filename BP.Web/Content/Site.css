@@ -22,3 +22,30 @@ select,
 textarea {
     max-width: 280px;
 }
+
+ul.nav li.dropdown:hover > ul.dropdown-menu {
+    display: block;
+}
+
+.socialLoginButton {
+    cursor: pointer;
+    color: transparent;
+    border: none;
+    width: 80px;
+    height: 80px;
+    margin-right: 20px;
+}
+
+    .socialLoginButton.facebook {
+        background: url(/content/images/gui/loginFacebook.png);
+        background-repeat: no-repeat;
+    }
+
+    .socialLoginButton.google {
+        background: url(/content/images/gui/loginGoogle.png);
+        background-repeat: no-repeat;
+    }
+    .socialLoginButton.twitter {
+        background: url(/content/images/gui/loginTwitter.png);
+        background-repeat: no-repeat;
+    }

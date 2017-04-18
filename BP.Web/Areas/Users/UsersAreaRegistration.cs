@@ -1,22 +1,22 @@
 ﻿using System.Web.Mvc;
 
-namespace BP.Web.Areas.Auth
+namespace BP.Web.Areas.Users
 {
-    public class AuthAreaRegistration : AreaRegistration 
+    public class UsersAreaRegistration : AreaRegistration 
     {
         public override string AreaName 
         {
             get 
             {
-                return "Auth";
+                return "Users";
             }
         }
 
         public override void RegisterArea(AreaRegistrationContext context) 
         {
             context.MapRoute(
-                "Auth_default",
-                "Auth/{controller}/{action}/{id}",
+                "Users_default",
+                "Users/{controller}/{action}/{id}",
                 new { action = "Index", id = UrlParameter.Optional }
             );
         }

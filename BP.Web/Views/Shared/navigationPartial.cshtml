@@ -1,0 +1,56 @@
+﻿@model BP.VM.ViewModels.Authentication.LoggedInUserVM
+<ul class="dropdown-menu">
+    @*
+        This section is for every user    
+    *@
+    <li class="dropdown-header">Account Section</li>
+    <li>
+        @Html.ActionLink("Account Details", "Index", new { controller = "Manage", area = "" })
+    </li>
+    @*
+        If the user has a password    
+    *@
+    @if (Model.HasPassword)
+    {
+    <li>
+        @Html.ActionLink("Change Password", "ChangePassword", new { controller = "Manage", area = "" })
+    </li>
+    }
+    else
+    {
+        <li>
+            @Html.ActionLink("Create Login Password", "SetPassword", new { controller = "Manage", area = "" })
+        </li>
+    }
+    <li>
+        @Html.ActionLink("View Profile", "Profile", new { controller = "Registered", area = "Users" })
+    </li>
+    <li>
+        @Html.ActionLink("Link Social Logins", "ManageLogins", new { controller = "Manage", area = "" })
+    </li>
+    @*
+        This section is only for Business Users    
+    *@
+    @if (Model.RoleGroupIndex == 300)
+    {
+        <li class="divider"></li>
+        <li class="dropdown-header">Business Section</li>
+        <li><a href="#">MTB Link 4</a></li>
+        <li><a href="#">MTB Link 5</a></li>
+    }
+    @if(Model.RoleGroupIndex >= 700)
+    {
+        <li class="divider"></li>
+        <li class="dropdown-header">Employee Section</li>
+    }
+    @if (Model.RoleGroupIndex >= 800)
+    {
+        <li class="divider"></li>
+        <li class="dropdown-header">IT Section</li>
+    }
+    @if (Model.RoleGroupIndex >= 1000)
+    {
+        <li class="divider"></li>
+        <li class="dropdown-header">WebMaster Section</li>
+    }
+</ul>

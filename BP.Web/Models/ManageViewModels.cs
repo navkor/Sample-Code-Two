@@ -20,6 +20,7 @@ namespace BP.Web.Models
         public IList<AuthenticationDescription> OtherLogins { get; set; }
     }
 
+
     public class FactorViewModel
     {
         public string Purpose { get; set; }
