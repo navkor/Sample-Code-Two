@@ -86,13 +86,19 @@
     <Compile Include="Models\Logger\Log.cs" />
     <Compile Include="Models\Logger\Subject.cs" />
     <Compile Include="Models\Logger\System.cs" />
+    <Compile Include="Models\Main\Account.cs" />
+    <Compile Include="Models\Main\Gender.cs" />
+    <Compile Include="Models\Main\LoginAttribute.cs" />
+    <Compile Include="Models\Main\LoginId.cs" />
+    <Compile Include="Models\Main\LoginIdType.cs" />
+    <Compile Include="Models\Main\NewsLetter.cs" />
+    <Compile Include="Models\Main\PreferenceAttribute.cs" />
+    <Compile Include="Models\Main\ProfileAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RouteValueDictionary\RouteHandling.cs" />
     <Compile Include="RouteValueDictionary\RouteValueDictionaryControls.cs" />
     <Compile Include="Static\StaticClasses.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\Main\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

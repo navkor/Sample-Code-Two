@@ -160,6 +160,38 @@ namespace BP.Web.Controllers
         }
 
         //
+        // GET: /Manage/EditUser
+        [Route("Manage/EditUser")]
+        [RoleGroupAuthorize(GroupIndex =700)]
+        public async Task<ActionResult> EditUser(string id)
+        {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            var subject = "Account Registration";
+            var instigator = "User Manager";
+            var system = "Manage Controller";
+            if (string.IsNullOrEmpty(id)) return View("Error");
+            var user = await UserManager.FindByIdAsync(id);
+            if (user == null) return View("UserNotFound");
+            var uId = User.Identity.GetUserId();
+            var roleName = "";
+            var rolesList = RoleManager.Roles.OrderBy(y => y.Index).ToList();
+            foreach(var role in rolesList)
+            {
+                if (UserManager.IsInRole(id, role.Name)) roleName = role.Name;
+            }
+            var model = new EditUser {
+                UserId = user.Id,
+                UserName = user.UserName,
+                EmailAddress = user.Email,
+                SelectedRole = roleName,
+                Roles = RolesList(rolesList, uId)
+            };
+
+            return View(model);
+        }
+
+        //
         // Get: /Manage/CreateUser
         [Route("Manage/CreateUsers")]
         [RoleGroupAuthorize(GroupIndex = 700)]

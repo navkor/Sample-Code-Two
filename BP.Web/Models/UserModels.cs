@@ -31,4 +31,10 @@ namespace BP.Web.Models
         public string SelectedRole { get; set; }
         public IEnumerable<SelectListItem> Roles { get; set; }
     }
+
+    public class EditUser : UserModels
+    {
+        public string SelectedRole { get; set; }
+        public IEnumerable<SelectListItem> Roles { get; set; }
+    }
 }

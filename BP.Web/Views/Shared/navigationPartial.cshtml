@@ -42,6 +42,12 @@
     {
         <li class="divider"></li>
         <li class="dropdown-header">Employee Section</li>
+        <li>
+            @Html.ActionLink("View Users", "Users", new { controller = "Manage", area = "" })
+        </li>
+        <li>
+            @Html.ActionLink("Create User", "CreateUsers", new { controller = "Manage", area = "" })
+        </li>
     }
     @if (Model.RoleGroupIndex >= 800)
     {
