@@ -51,6 +51,9 @@
     <Reference Include="Auth0.Owin, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Auth0-ASPNET-Owin.2.1.0\lib\net45\Auth0.Owin.dll</HintPath>
     </Reference>
+    <Reference Include="Facebook, Version=6.0.10.0, Culture=neutral, PublicKeyToken=58cb4f2111d1e6de, processorArchitecture=MSIL">
+      <HintPath>..\packages\Facebook.7.0.6\lib\net45\Facebook.dll</HintPath>
+    </Reference>
     <Reference Include="Google.Apis, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Apis.1.25.0\lib\net45\Google.Apis.dll</HintPath>
     </Reference>
@@ -246,9 +249,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Areas\Auth\AuthAreaRegistration.cs" />
-    <Compile Include="Areas\Auth\Controllers\Auth0AccountController.cs" />
-    <Compile Include="Areas\Auth\Controllers\UserController.cs" />
+    <Compile Include="Areas\Users\Controllers\ProfileController.cs" />
     <Compile Include="Areas\Users\Controllers\RegisteredController.cs" />
     <Compile Include="Areas\Users\UsersAreaRegistration.cs" />
     <Compile Include="Controllers\AccountController.cs" />
@@ -353,11 +354,6 @@
     <Content Include="Areas\Users\Views\Shared\_Layout.cshtml" />
     <Content Include="Areas\Users\Views\Registered\Index.cshtml" />
     <Content Include="Areas\Users\Views\Registered\Profile.cshtml" />
-    <Content Include="Areas\Auth\Views\web.config" />
-    <Content Include="Areas\Auth\Views\_ViewStart.cshtml" />
-    <Content Include="Areas\Auth\Views\Shared\_Layout.cshtml" />
-    <Content Include="Areas\Auth\Views\User\Login.cshtml" />
-    <Content Include="Areas\Auth\Views\User\Claims.cshtml" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -422,12 +418,12 @@
     <Content Include="Views\Manage\Error.cshtml" />
     <Content Include="Views\Manage\UserNotFound.cshtml" />
     <Content Include="Views\Manage\EditUser.cshtml" />
+    <Content Include="Views\Manage\ChangeUserName.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Areas\Auth\Models\" />
-    <Folder Include="Areas\Auth\Views\Auth0Account\" />
     <Folder Include="Areas\Users\Models\" />
+    <Folder Include="Areas\Users\Views\Profile\" />
     <Folder Include="Views\partials\" />
   </ItemGroup>
   <ItemGroup>

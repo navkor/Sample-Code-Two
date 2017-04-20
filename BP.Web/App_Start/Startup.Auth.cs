@@ -9,6 +9,8 @@ using BP.Web.Models;
 using System.Web;
 using System.Web.SessionState;
 using Microsoft.Owin.Extensions;
+using Microsoft.Owin.Security.Facebook;
+using System.Threading.Tasks;
 
 namespace BP.Web
 {
@@ -34,43 +36,43 @@ namespace BP.Web
                 /*
                  UnComment if not using Auth0 anymore
                  */
-                //Provider = new CookieAuthenticationProvider
-                //{
-                //    // Enables the application to validate the security stamp when the user logs in.
-                //    // This is a security feature which is used when you change a password or add an external login to your account.  
-                //    OnValidateIdentity = SecurityStampValidator.OnValidateIdentity<ApplicationUserManager, ApplicationUser>(
-                //        validateInterval: TimeSpan.FromMinutes(30),
-                //        regenerateIdentity: (manager, user) => user.GenerateUserIdentityAsync(manager))
-                //}
+                Provider = new CookieAuthenticationProvider
+                {
+                    // Enables the application to validate the security stamp when the user logs in.
+                    // This is a security feature which is used when you change a password or add an external login to your account.  
+                    OnValidateIdentity = SecurityStampValidator.OnValidateIdentity<ApplicationUserManager, ApplicationUser>(
+                        validateInterval: TimeSpan.FromMinutes(30),
+                        regenerateIdentity: (manager, user) => user.GenerateUserIdentityAsync(manager))
+                }
             });            
             app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);
 
             /*
              Comment out if no longer using autho0
 
-             */
             app.UseAuth0Authentication(
                 clientId: System.Configuration.ConfigurationManager.AppSettings["auth0:ClientId"],
                 clientSecret: System.Configuration.ConfigurationManager.AppSettings["auth0:ClientSecret"],
                 domain: System.Configuration.ConfigurationManager.AppSettings["auth0:Domain"]
             );
+             */
 
             // Enables the application to temporarily store user information when they are verifying the second factor in the two-factor authentication process.
             /*UNCOMMENT IF NOT USING AUTHO ANYMORE
              
-             
+             */
             app.UseTwoFactorSignInCookie(DefaultAuthenticationTypes.TwoFactorCookie, TimeSpan.FromMinutes(5));
             
-             */
+             
 
             // Enables the application to remember the second login verification factor such as phone or email.
             // Once you check this option, your second step of verification during the login process will be remembered on the device where you logged in from.
             // This is similar to the RememberMe option when you log in.
-            /*UNCOMMENT IF NOT USING AUTHO ANYMORE
-             * 
-             * 
+            //UNCOMMENT IF NOT USING AUTHO ANYMORE
+            // *
+            // *
             app.UseTwoFactorRememberBrowserCookie(DefaultAuthenticationTypes.TwoFactorRememberBrowserCookie);
-            */
+
             // Uncomment the following lines to enable logging in with third party login providers
             //app.UseMicrosoftAccountAuthentication(
             //    clientId: "",
@@ -80,15 +82,25 @@ namespace BP.Web
             //   consumerKey: "3RVRXmNBBLCMyd2tXZcqO9loa",
             //   consumerSecret: "zdyEmAkI3uIOlBoHtiTWIyWhnBDcyPjsbbPpwCtfircIPZnGqZ");
 
-            //app.UseFacebookAuthentication(
-            //   appId: "122575158082318",
-            //   appSecret: "0d58dbaf3f64b65297fd290fae061d85");
+            app.UseFacebookAuthentication(new FacebookAuthenticationOptions
+            {
+                AppId = "122575158082318",
+                AppSecret = "0d58dbaf3f64b65297fd290fae061d85",
+                Scope = { "email" },
+                Provider = new FacebookAuthenticationProvider
+                {
+                    OnAuthenticated = context =>
+                    {
+                        context.Identity.AddClaim(new System.Security.Claims.Claim("FacebookAccessToken", context.AccessToken));
+                        return Task.FromResult(true);
+                    }
+                }});
 
-            //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
-            //{
-            //    ClientId = "921322109010-9uac5qfeoooqkqr2bjg50r49fpg8b5pl.apps.googleusercontent.com",
-            //    ClientSecret = "xcm_E8FxFy9yY_oRnGr9QldO"
-            //});
+            app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
+            {
+                ClientId = "921322109010-9uac5qfeoooqkqr2bjg50r49fpg8b5pl.apps.googleusercontent.com",
+                ClientSecret = "xcm_E8FxFy9yY_oRnGr9QldO"
+            });
         }
     }
 }

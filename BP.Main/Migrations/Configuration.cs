@@ -46,6 +46,63 @@ namespace BP.Main.Migrations
 
             genders.ForEach(h => context.Genders.AddOrUpdate(s => s.Index, h));
 
+            var userNameTypes = new List<UserNameType> {
+                new UserNameType { Index = 1, Name = "First Name" },
+                new UserNameType { Index = 2, Name = "Last Name" },
+                new UserNameType { Index = 3, Name = "Surname" },
+                new UserNameType { Index = 4, Name = "Nickname" },
+                new UserNameType { Index = 5, Name = "Pseudoname" },
+                new UserNameType { Index = 6, Name = "Maiden Name" },
+                new UserNameType { Index = 7, Name = "Secret Name" },
+                new UserNameType { Index = 8, Name = "Middle Name" },
+            };
+
+            userNameTypes.ForEach(h => context.UserNameTypes.AddOrUpdate(s => s.Index, h));
+
+
+            var titles = new List<Title> {
+                new Title { Index = 10, Name = "Dr" },
+                new Title { Index = 20, Name = "Mr" },
+                new Title { Index = 30, Name = "Mrs" },
+                new Title { Index = 40, Name = "Mis" },
+                new Title { Index = 50, Name = "Miss" },
+                new Title { Index = 60, Name = "Jr" },
+                new Title { Index = 70, Name = "Master" },
+                new Title { Index = 80, Name = "King" },
+                new Title { Index = 90, Name = "Queen" },
+                new Title { Index = 100, Name = "Prince" },
+                new Title { Index = 110, Name = "Princess" },
+            };
+
+            titles.ForEach(h => context.Titles.AddOrUpdate(s => s.Index, h));
+
+
+            context.SaveChanges();
+
+            var first = context.UserNameTypes.FirstOrDefault(x => x.Index == 1);
+            var middle = context.UserNameTypes.FirstOrDefault(x => x.Index == 8);
+            var last = context.UserNameTypes.FirstOrDefault(x => x.Index == 2);
+            var sur = context.UserNameTypes.FirstOrDefault(x => x.Index == 3);
+
+            var firstmiddlelast = new List<NameFormatMap> {
+                new NameFormatMap { UserNameType = first, DisplayOrder = 1 },
+                new NameFormatMap { UserNameType = middle, DisplayOrder = 2 },
+                new NameFormatMap { UserNameType = last, DisplayOrder = 3 },
+            };
+
+            var firstMiddleSur = new List<NameFormatMap> {
+                new NameFormatMap { UserNameType = first, DisplayOrder = 1 },
+                new NameFormatMap { UserNameType = middle, DisplayOrder = 2 },
+                new NameFormatMap { UserNameType = sur, DisplayOrder = 3 },
+            };
+
+            var nameFormats = new List<NameFormat> {
+                new NameFormat { Name = "US Standard", Index = 10, NameFormatMaps = firstmiddlelast },
+                new NameFormat { Name = "UK Standard", Index = 20, NameFormatMaps = firstMiddleSur }
+            };
+
+            nameFormats.ForEach(h => context.NameFormats.AddOrUpdate(s => s.Index, h));
+
             context.SaveChanges();
         }
     }

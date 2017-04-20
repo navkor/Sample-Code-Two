@@ -39,6 +39,23 @@ namespace sampleLogin.Models
         public string ConfirmPassword { get; set; }
     }
 
+    public class ChangeUserName
+    {
+        [Required]
+        [Display(Name = "Username")]
+        public string UserName { get; set; }
+
+        [Required]
+        [Display(Name = "Confirm UserName")]
+        [Compare("UserName", ErrorMessage = "Your username doesn't match the confirmation.  Please check the spelling and try again.")]
+        public string ConfirmUserName { get; set; }
+
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "Current Password")]
+        public string CurrentPassword { get; set; }
+    }
+
     public class ChangePasswordViewModel
     {
         [Required]

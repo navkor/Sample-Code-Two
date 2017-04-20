@@ -9,6 +9,7 @@ namespace BP.Global.Models.Main
         [Key]
         [ForeignKey("LoginId")]
         public int LoginIdID { get; private set; }
+        public virtual NameAttribute NameAttribute { get; set; }
         public virtual LoginId LoginId { get; set; }
         public string Bio { get; set; }
         public DateTime BirthDate { get; set; }

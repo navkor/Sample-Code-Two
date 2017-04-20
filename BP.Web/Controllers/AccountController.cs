@@ -9,9 +9,11 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using BP.Web.Models;
+using System.Data.Entity;
 using BP.Service.Providers.Logger;
 using reCaptcha;
 using System.Configuration;
+using Facebook;
 
 namespace BP.Web.Controllers
 {
@@ -298,6 +300,8 @@ namespace BP.Web.Controllers
             if (result.Succeeded)
             {
                 var user = await UserManager.FindByIdAsync(userId);
+                var role = await RoleManager.Roles.FirstOrDefaultAsync(x => x.Index == 1);
+                await UserManager.AddToRoleAsync(userId, role.Name);
                 await Logger.CreateNewLog($"Successfully confirmed email for {user.UserName} on IPAddress {IPAddress}", subject, instigator, system);
                 return View("ConfirmEmail");
             }
@@ -393,6 +397,7 @@ namespace BP.Web.Controllers
             var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
             if (result.Succeeded)
             {
+                await Logger.CreateNewLog($"{user.UserName} successfully reset his or her password on {IPAddress}", subject, instigator, system);
                 return RedirectToAction("ResetPasswordConfirmation", "Account");
             }
             AddErrors(result);
@@ -467,11 +472,21 @@ namespace BP.Web.Controllers
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
             var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            var subject = "Account Login";
+            var system = "Account Controller";
             ViewBag.IPAddress = IPAddress;
             var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
             if (loginInfo == null)
             {
                 return RedirectToAction("Login");
+            }
+            if (loginInfo.Login.LoginProvider == "Facebook")
+            {
+                var identity = AuthenticationManager.GetExternalIdentity(DefaultAuthenticationTypes.ExternalCookie);
+                var access_token = identity.FindFirstValue("FacebookAccessToken");
+                var fb = new FacebookClient(access_token);
+                dynamic myInfo = fb.Get("/me?fields=email"); // specify the email field
+                loginInfo.Email = myInfo.email;
             }
 
             // Sign in the user with this external login provider if the user already has a login
@@ -479,6 +494,13 @@ namespace BP.Web.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
+                    var role = await RoleManager.Roles.FirstOrDefaultAsync(x => x.Index == 1);
+                    var user = await UserManager.Users.FirstOrDefaultAsync(x => x.Email.Equals(loginInfo.Email));
+                    user.EmailConfirmed = true;
+                    await UserManager.UpdateAsync(user);
+                    await UserManager.AddToRoleAsync(user.Id, role.Name);
+                    var instigator = loginInfo.Login.LoginProvider;
+                    await Logger.CreateNewLog($"{loginInfo.Email} successfully logged in using {instigator} from {IPAddress}", subject, instigator, system);
                     return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:
                     return View("Lockout");
@@ -486,7 +508,31 @@ namespace BP.Web.Controllers
                     return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = false });
                 case SignInStatus.Failure:
                 default:
-                    // If the user does not have an account, then prompt the user to create an account
+                    // no account was found with that information...so let's find out if the user is registered in any other means
+                    user = await UserManager.Users.FirstOrDefaultAsync(x => x.Email.Equals(loginInfo.Email));
+                    if (user != null)
+                    {
+                        // this user has an account with the same email address as this one
+                        if (!user.EmailConfirmed) await UserManager.UpdateAsync(user);
+                        if (user.Roles.Count == 0)
+                        {
+                            role = await RoleManager.Roles.FirstOrDefaultAsync(x => x.Index == 1);
+                            await UserManager.AddToRoleAsync(user.Id, role.Name);
+                        }
+                        var loginInfo2 = await AuthenticationManager.GetExternalLoginInfoAsync();
+                        if (loginInfo2 != null)
+                        {
+                            var result2 = await UserManager.AddLoginAsync(user.Id, loginInfo2.Login);
+                            if (result2.Succeeded)
+                            {
+                                instigator = loginInfo2.Login.LoginProvider;
+                                await Logger.CreateNewLog($"{loginInfo2.Email} successfully logged in using {instigator} from {IPAddress}", subject, instigator, system);
+                                result = await SignInManager.ExternalSignInAsync(loginInfo2, isPersistent: false);
+                                if (result == SignInStatus.Failure) return View("Error");
+                                return RedirectToLocal(returnUrl);
+                            }
+                        }
+                    }
                     ViewBag.ReturnUrl = returnUrl;
                     ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
                     return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Email });
@@ -502,6 +548,8 @@ namespace BP.Web.Controllers
         {
             var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             ViewBag.IPAddress = IPAddress;
+            var subject = "Account Login";
+            var system = "Account Controller";
             if (User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("Index", "Manage");
@@ -522,6 +570,8 @@ namespace BP.Web.Controllers
                     result = await UserManager.AddLoginAsync(user.Id, info.Login);
                     if (result.Succeeded)
                     {
+                        var instigator = info.Login.LoginProvider;
+                        await Logger.CreateNewLog($"{info.Email} successfully logged in using {instigator} from {IPAddress}", subject, instigator, system);
                         await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                         return RedirectToLocal(returnUrl);
                     }
@@ -537,8 +587,14 @@ namespace BP.Web.Controllers
         // POST: /Account/LogOff
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult LogOff()
+        public async Task<ActionResult> LogOff()
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            var subject = "Account Logoff";
+            var system = "Account Controller";
+            var instigator = "LogOff Button";
+            await Logger.CreateNewLog($"{User.Identity.Name} successfully logged out using {instigator} from {IPAddress}", subject, instigator, system);
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
             return RedirectToAction("Index", "Home");
         }

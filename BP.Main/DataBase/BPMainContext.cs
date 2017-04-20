@@ -35,9 +35,15 @@ namespace BP.Main.DataBase
         public DbSet<LoginAttribute> LoginAttributes { get; set; }
         public DbSet<LoginId> LoginIds { get; set; }
         public DbSet<LoginIdType> LoginIdTypes { get; set; }
+        public DbSet<NameAttribute> NameAttributes { get; set; }
+        public DbSet<NameFormat> NameFormats { get; set; }
+        public DbSet<NameFormatMap> NameFormatMaps { get; set; }
         public DbSet<NewsLetter> NewsLetters { get; set; }
         public DbSet<PreferenceAttribute> PreferenceAttributes { get; set; }
         public DbSet<ProfileAttribute> ProfileAttributes { get; set; }
+        public DbSet<Title> Titles { get; set; }
+        public DbSet<UserName> UserNames { get; set; }
+        public DbSet<UserNameType> UserNameTypes { get; set; }
         #endregion
 
 

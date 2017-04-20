@@ -10,6 +10,7 @@ using BP.Web.Models;
 using System.Collections.Generic;
 using BP.Service.Providers.Logger;
 using BP.Service.Providers.Core;
+using System.Text;
 
 namespace BP.Web.Controllers
 {
@@ -98,6 +99,8 @@ namespace BP.Web.Controllers
         // GET: /Manage/Index
         public async Task<ActionResult> Index(ManageMessageId? message)
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             ViewBag.StatusMessage =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
                 : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
@@ -126,6 +129,10 @@ namespace BP.Web.Controllers
         public async Task<ActionResult> RemoveLogin(string loginProvider, string providerKey)
         {
             ManageMessageId? message;
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            var subject = "Link External Login";
+            var system = "Manage Controller";
             var result = await UserManager.RemoveLoginAsync(User.Identity.GetUserId(), new UserLoginInfo(loginProvider, providerKey));
             if (result.Succeeded)
             {
@@ -135,6 +142,8 @@ namespace BP.Web.Controllers
                     await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                 }
                 message = ManageMessageId.RemoveLoginSuccess;
+                var instigator = loginProvider;
+                await Logger.CreateNewLog($"{User.Identity.Name} successfully removed an external login using {instigator} from {IPAddress}", subject, instigator, system);
             }
             else
             {
@@ -192,6 +201,55 @@ namespace BP.Web.Controllers
         }
 
         //
+        // GET: /Manage/ChangeUserName
+        [Route("Manage/ChangeUserName")]
+        public ActionResult ChangeUserName()
+        {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("Manage/ChangeUserName")]
+        public async Task<ActionResult> ChangeUserName(EditUserName model)
+        {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            // let's find out if they've picked a username that already exists
+            var check = await UserManager.FindByNameAsync(model.UserName);
+            if (check != null)
+            {
+                ModelState.AddModelError(nameof(EditUserName.UserName), "That username is not available");
+                return View(model);
+            }
+            // now, find out if the password is correct
+            var current = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            if (await UserManager.CheckPasswordAsync(current, model.CurrentPassword))
+            {
+                current.UserName = model.UserName;
+                var result = await UserManager.UpdateAsync(current);
+                if (result.Succeeded) return RedirectToAction("Index");
+                StringBuilder sb = new StringBuilder();
+                sb.Append("There were some problems:");
+                sb.AppendLine();
+                foreach(var e in result.Errors)
+                {
+                    sb.AppendLine(e);
+                }
+                ModelState.AddModelError("", sb.ToString());
+                return View(model);
+            }
+            ModelState.AddModelError(nameof(EditUserName.CurrentPassword), "Please try again.");
+            return View(model);
+        }
+
+        //
         // Get: /Manage/CreateUser
         [Route("Manage/CreateUsers")]
         [RoleGroupAuthorize(GroupIndex = 700)]
@@ -232,6 +290,7 @@ namespace BP.Web.Controllers
             // they are creating a new user
             // so we gotta do things a little different for this one!
             var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             var subject = "Account Registration";
             var instigator = "User Manager";
             var system = "Manage Controller";
@@ -265,6 +324,8 @@ namespace BP.Web.Controllers
         // GET: /Manage/AddPhoneNumber
         public ActionResult AddPhoneNumber()
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             return View();
         }
 
@@ -274,6 +335,8 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> AddPhoneNumber(AddPhoneNumberViewModel model)
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -298,6 +361,8 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> EnableTwoFactorAuthentication()
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId(), true);
             var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
             if (user != null)
@@ -313,6 +378,8 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DisableTwoFactorAuthentication()
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId(), false);
             var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
             if (user != null)
@@ -326,6 +393,8 @@ namespace BP.Web.Controllers
         // GET: /Manage/VerifyPhoneNumber
         public async Task<ActionResult> VerifyPhoneNumber(string phoneNumber)
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             var code = await UserManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId(), phoneNumber);
             // Send an SMS through the SMS provider to verify the phone number
             return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
@@ -337,6 +406,8 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> VerifyPhoneNumber(VerifyPhoneNumberViewModel model)
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -362,6 +433,8 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> RemovePhoneNumber()
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             var result = await UserManager.SetPhoneNumberAsync(User.Identity.GetUserId(), null);
             if (!result.Succeeded)
             {
@@ -379,6 +452,8 @@ namespace BP.Web.Controllers
         // GET: /Manage/ChangePassword
         public ActionResult ChangePassword()
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             return View();
         }
 
@@ -388,20 +463,27 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ChangePassword(ChangePasswordViewModel model)
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            var subject = "Account Password";
+            var system = "Manage Controller";
+            var instigator = "Change Account Password";
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
             var result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword, model.NewPassword);
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
             if (result.Succeeded)
             {
-                var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
                 if (user != null)
                 {
                     await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                 }
+                await Logger.CreateNewLog($"{user.UserName} successfully changed the password for his or her account on {IPAddress}", subject, instigator, system);
                 return RedirectToAction("Index", new { Message = ManageMessageId.ChangePasswordSuccess });
             }
+            await Logger.CreateNewLog($"{user.UserName} failed to change the password for his or her account on {IPAddress}", subject, instigator, system);
             AddErrors(result);
             return View(model);
         }
@@ -410,6 +492,8 @@ namespace BP.Web.Controllers
         // GET: /Manage/SetPassword
         public ActionResult SetPassword()
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             return View();
         }
 
@@ -419,18 +503,25 @@ namespace BP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> SetPassword(SetPasswordViewModel model)
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            var subject = "Account Password";
+            var system = "Manage Controller";
+            var instigator = "Set Account Password";
             if (ModelState.IsValid)
             {
                 var result = await UserManager.AddPasswordAsync(User.Identity.GetUserId(), model.NewPassword);
+                var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
                 if (result.Succeeded)
                 {
-                    var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
                     if (user != null)
                     {
                         await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                     }
+                    await Logger.CreateNewLog($"{user.UserName} successfully set a password for his or her account on {IPAddress}", subject, instigator, system);
                     return RedirectToAction("Index", new { Message = ManageMessageId.SetPasswordSuccess });
                 }
+                await Logger.CreateNewLog($"{user.UserName} failed to set a password for his or her account on {IPAddress}", subject, instigator, system);
                 AddErrors(result);
             }
 
@@ -442,6 +533,8 @@ namespace BP.Web.Controllers
         // GET: /Manage/ManageLogins
         public async Task<ActionResult> ManageLogins(ManageMessageId? message)
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
             ViewBag.StatusMessage =
                 message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
                 : message == ManageMessageId.Error ? "An error has occurred."
@@ -475,11 +568,17 @@ namespace BP.Web.Controllers
         // GET: /Manage/LinkLoginCallback
         public async Task<ActionResult> LinkLoginCallback()
         {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            var subject = "Link External Login";
+            var system = "Manage Controller";
             var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, User.Identity.GetUserId());
             if (loginInfo == null)
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
             }
+            var instigator = loginInfo.Login.LoginProvider;
+            await Logger.CreateNewLog($"{User.Identity.Name} successfully linked an external login using {instigator} from {IPAddress}", subject, instigator, system);
             var result = await UserManager.AddLoginAsync(User.Identity.GetUserId(), loginInfo.Login);
             return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
         }
