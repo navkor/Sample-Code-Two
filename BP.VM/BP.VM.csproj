@@ -50,6 +50,7 @@
     <Compile Include="ViewModels\Authentication\AccountRegistered.cs" />
     <Compile Include="ViewModels\Authentication\CookieViewModel.cs" />
     <Compile Include="ViewModels\Authentication\LoggedInUserVM.cs" />
+    <Compile Include="ViewModels\Business\BusinessViewPullModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BP.Auth\BP.Auth.csproj">

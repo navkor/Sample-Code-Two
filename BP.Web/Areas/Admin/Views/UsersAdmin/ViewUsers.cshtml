@@ -1,11 +1,11 @@
 ﻿@model IEnumerable<BP.Web.Models.UserModels>
 @{
-    ViewBag.Title = "Users";
+    ViewBag.Title = "View Users";
 }
 
 <h2>Registered Users</h2>
 
-@Html.ActionLink("Create a new user", "CreateUsers", new { area = "", controller = "Manage" })
+@Html.ActionLink("Create a new user", "CreateUsers", new { area = "Admin", controller = "UsersAdmin" })
 
 <hr />
 <div class="container"><div class="row">
@@ -44,9 +44,9 @@
             </div>
             <div class="col-md-4">
                 <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-                    @Html.ActionLink("Details", "UserDetails", new { controller = "manage", area = "", id = user.value.UserId }, new { @class = "btn btn-primary" })
-                    @Html.ActionLink("Edit", "EditUser", new { controller = "manage", area = "", id = user.value.UserId }, new { @class = "btn btn-secondary" })
-                    @Html.ActionLink("Delete", "DeleteUser", new { controller = "manage", area = "", id = user.value.UserId }, new { @class = "btn btn-danger" })
+                    @Html.ActionLink("Details", "UserDetails", new { controller = "UsersAdmin", area = "Admin", id = user.value.UserId }, new { @class = "btn btn-primary" })
+                    @Html.ActionLink("Edit", "EditUser", new { controller = "UsersAdmin", area = "Admin", id = user.value.UserId }, new { @class = "btn btn-secondary" })
+                    @Html.ActionLink("Delete", "DeleteUser", new { controller = "UsersAdmin", area = "Admin", id = user.value.UserId }, new { @class = "btn btn-danger" })
                 </div>
             </div>
         </div>

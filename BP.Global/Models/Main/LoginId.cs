@@ -6,6 +6,6 @@
         public string UserId { get; set; }
         public virtual LoginIdType LoginIdType { get; set; }
         public virtual ProfileAttribute ProfileAttribute { get; set; }
-        public virtual PreferenceAttribute PreferenceAttribute { get; set; }
+        public virtual LoginPreferenceAttribute PreferenceAttribute { get; set; }
     }
 }

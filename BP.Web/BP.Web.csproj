@@ -249,9 +249,13 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
+    <Compile Include="Areas\Admin\Controllers\BusinessAdminController.cs" />
+    <Compile Include="Areas\Admin\Controllers\UsersAdminController.cs" />
     <Compile Include="Areas\Users\Controllers\ProfileController.cs" />
     <Compile Include="Areas\Users\Controllers\RegisteredController.cs" />
     <Compile Include="Areas\Users\UsersAreaRegistration.cs" />
+    <Compile Include="Areas\WebMaster\WebMasterAreaRegistration.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HeaderController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -287,6 +291,7 @@
     <Content Include="Content\images\gui\loginGoogle.png" />
     <Content Include="Content\images\gui\loginTwitter.png" />
     <Content Include="Content\images\gui\sherlock-holmes-147255_960_720.png" />
+    <Content Include="Content\images\gui\stop-sign.jpg" />
     <Content Include="Content\themes\base\accordion.css" />
     <Content Include="Content\themes\base\all.css" />
     <Content Include="Content\themes\base\autocomplete.css" />
@@ -354,6 +359,8 @@
     <Content Include="Areas\Users\Views\Shared\_Layout.cshtml" />
     <Content Include="Areas\Users\Views\Registered\Index.cshtml" />
     <Content Include="Areas\Users\Views\Registered\Profile.cshtml" />
+    <Content Include="Areas\Admin\Views\web.config" />
+    <Content Include="Areas\WebMaster\Views\web.config" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -411,19 +418,27 @@
     <Content Include="Views\Account\partials\loginOnePartial.cshtml" />
     <Content Include="Views\Account\partials\loginTwoPartial.cshtml" />
     <Content Include="Views\Account\RegistrationSuccessful.cshtml" />
-    <Content Include="Views\Manage\Users.cshtml" />
-    <Content Include="Views\Manage\CreateUsers.cshtml" />
+    <Content Include="Areas\Admin\Views\UsersAdmin\ViewUsers.cshtml" />
+    <Content Include="Areas\Admin\Views\UsersAdmin\CreateUsers.cshtml" />
     <Content Include="Views\Manage\CreationSuccessful.cshtml" />
     <Content Include="Views\Shared\navigationPartial.cshtml" />
     <Content Include="Views\Manage\Error.cshtml" />
     <Content Include="Views\Manage\UserNotFound.cshtml" />
-    <Content Include="Views\Manage\EditUser.cshtml" />
+    <Content Include="Areas\Admin\Views\UsersAdmin\EditUser.cshtml" />
     <Content Include="Views\Manage\ChangeUserName.cshtml" />
+    <Content Include="Views\Error.cshtml" />
+    <Content Include="Views\Account\UnAuthorized.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Areas\Admin\Models\" />
+    <Folder Include="Areas\Admin\Views\BusinessAdmin\" />
+    <Folder Include="Areas\Admin\Views\Shared\" />
     <Folder Include="Areas\Users\Models\" />
     <Folder Include="Areas\Users\Views\Profile\" />
+    <Folder Include="Areas\WebMaster\Controllers\" />
+    <Folder Include="Areas\WebMaster\Models\" />
+    <Folder Include="Areas\WebMaster\Views\Shared\" />
     <Folder Include="Views\partials\" />
   </ItemGroup>
   <ItemGroup>

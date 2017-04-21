@@ -46,6 +46,22 @@ namespace System.Web.Mvc
         public int GroupIndex { get; set; }
         public RoleGroupAuthorizeAttribute() { }
 
+        protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
+        {
+            if (!filterContext.HttpContext.User.Identity.IsAuthenticated)
+            {
+                //if not logged, it will work as normal Authorize and redirect to the Login
+                base.HandleUnauthorizedRequest(filterContext);
+
+            }
+            else
+            {
+                //logged and wihout the role to access it - redirect to the custom controller action
+                filterContext.Controller.TempData["notallowed"] = "true";
+                filterContext.Result = new RedirectToRouteResult(new RouteValueDictionary(new { controller = "Account", action = "UnAuthorized", area = "" }));
+            }
+        }
+
         public override void OnAuthorization(AuthorizationContext filterContext)
         {
             if (AuthorizeRequest(filterContext)) return;

@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace BP.Global.Models.Main
 {
-    public class Account
+    public class KeyWord
     {
-        public Account()
+        public KeyWord()
         {
             PreferredEntities = new HashSet<EntityPreferenceAttribute>();
             AvoidEntities = new HashSet<EntityPreferenceAttribute>();
         }
         public int ID { get; private set; }
-        public virtual LoginAttribute LoginAttribute { get; set; }
-        public virtual EntityAttribute EntityAttribute { get; set; }
+        public string Name { get; set; }
         public virtual ICollection<EntityPreferenceAttribute> PreferredEntities { get; set; }
         public virtual ICollection<EntityPreferenceAttribute> AvoidEntities { get; set; }
     }

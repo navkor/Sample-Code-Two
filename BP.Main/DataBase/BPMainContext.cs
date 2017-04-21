@@ -19,7 +19,7 @@ namespace BP.Main.DataBase
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
-            modelBuilder.Entity<PreferenceAttribute>()
+            modelBuilder.Entity<LoginPreferenceAttribute>()
                 .HasMany(c => c.NewsLetters)
                 .WithMany(s => s.PreferenceAttributes)
                 .Map(cs => {
@@ -27,19 +27,57 @@ namespace BP.Main.DataBase
                     cs.MapRightKey("PreferenceNewsLettersIds");
                     cs.ToTable("PreferenceNewsLettersTable");
                 });
+            modelBuilder.Entity<EntityPreferenceAttribute>()
+                .HasMany(c => c.AvoidAccounts)
+                .WithMany(s => s.AvoidEntities)
+                .Map(cs => {
+                    cs.MapLeftKey("EntityAccountId");
+                    cs.MapRightKey("AccountEntityId");
+                    cs.ToTable("AvoidAccountPreferenceTable");
+                });
+            modelBuilder.Entity<EntityPreferenceAttribute>()
+                .HasMany(c => c.PreferredAccounts)
+                .WithMany(s => s.PreferredEntities)
+                .Map(cs => {
+                    cs.MapLeftKey("PreferredAccountId");
+                    cs.MapRightKey("AccountEntityId");
+                    cs.ToTable("PreferredAccountPreferenceTable");
+                });
+            modelBuilder.Entity<EntityPreferenceAttribute>()
+                .HasMany(c => c.AvoidKeywords)
+                .WithMany(s => s.AvoidEntities)
+                .Map(cs => {
+                    cs.MapLeftKey("EntityKeyWordId");
+                    cs.MapRightKey("KeyWordEntityId");
+                    cs.ToTable("AvoidKeyWordPreferenceTable");
+                });
+            modelBuilder.Entity<EntityPreferenceAttribute>()
+                .HasMany(c => c.PreferredKeywords)
+                .WithMany(s => s.PreferredEntities)
+                .Map(cs => {
+                    cs.MapLeftKey("EntityKeywordId");
+                    cs.MapRightKey("KeyWordEntityId");
+                    cs.ToTable("PreferredKeyWordPreferenceTable");
+                });
         }
 
         #region Put DbSets Here
         public DbSet<Account> Accounts { get; set; }
+        public DbSet<AccountDate> AccountDates { get; set; }
+        public DbSet<AccountDateType> AccountDateTypes { get; set; }
+        public DbSet<AccountType> AccountTypes { get; set; }
+        public DbSet<EntityAttribute> EntityAttributes { get; set; }
+        public DbSet<EntityPreferenceAttribute> EntityPreferenceAttributes { get; set; }
         public DbSet<Gender> Genders { get; set; }
+        public DbSet<KeyWord> KeyWords { get; set; }
         public DbSet<LoginAttribute> LoginAttributes { get; set; }
         public DbSet<LoginId> LoginIds { get; set; }
         public DbSet<LoginIdType> LoginIdTypes { get; set; }
+        public DbSet<LoginPreferenceAttribute> LoginPreferenceAttributes { get; set; }
         public DbSet<NameAttribute> NameAttributes { get; set; }
         public DbSet<NameFormat> NameFormats { get; set; }
         public DbSet<NameFormatMap> NameFormatMaps { get; set; }
         public DbSet<NewsLetter> NewsLetters { get; set; }
-        public DbSet<PreferenceAttribute> PreferenceAttributes { get; set; }
         public DbSet<ProfileAttribute> ProfileAttributes { get; set; }
         public DbSet<Title> Titles { get; set; }
         public DbSet<UserName> UserNames { get; set; }

@@ -2,15 +2,15 @@
 
 namespace BP.Global.Models.Main
 {
-    public class NewsLetter
+    public class AccountDateType
     {
-        public NewsLetter()
+        public AccountDateType()
         {
-            PreferenceAttributes = new HashSet<LoginPreferenceAttribute>();
+            AccountDates = new HashSet<AccountDate>();
         }
         public int ID { get; private set; }
         public int Index { get; set; }
         public string Name { get; set; }
-        public virtual ICollection<LoginPreferenceAttribute> PreferenceAttributes { get; set; }
+        public virtual ICollection<AccountDate> AccountDates { get; set; }
     }
 }

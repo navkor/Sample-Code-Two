@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BP.Global.Models.Main
 {
-    public class PreferenceAttribute
+    public class LoginPreferenceAttribute
     {
-        public PreferenceAttribute()
+        public LoginPreferenceAttribute()
         {
             NewsLetters = new HashSet<NewsLetter>();
         }

@@ -151,54 +151,7 @@ namespace BP.Web.Controllers
             }
             return RedirectToAction("ManageLogins", new { Message = message });
         }
-
-        //
-        // Get: /Manager/Users
-        [Route("Manage/Users")]
-        [RoleGroupAuthorize(GroupIndex = 700)]
-        public ActionResult Users()
-        {
-            var users = UserManager.Users.Select(x => new UserModels {
-                UserId = x.Id,
-                UserName = x.UserName,
-                EmailAddress = x.Email,
-                EmailVerified = x.EmailConfirmed
-            }).ToList();
-
-            return View(users);
-        }
-
-        //
-        // GET: /Manage/EditUser
-        [Route("Manage/EditUser")]
-        [RoleGroupAuthorize(GroupIndex =700)]
-        public async Task<ActionResult> EditUser(string id)
-        {
-            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
-            ViewBag.IPAddress = IPAddress;
-            var subject = "Account Registration";
-            var instigator = "User Manager";
-            var system = "Manage Controller";
-            if (string.IsNullOrEmpty(id)) return View("Error");
-            var user = await UserManager.FindByIdAsync(id);
-            if (user == null) return View("UserNotFound");
-            var uId = User.Identity.GetUserId();
-            var roleName = "";
-            var rolesList = RoleManager.Roles.OrderBy(y => y.Index).ToList();
-            foreach(var role in rolesList)
-            {
-                if (UserManager.IsInRole(id, role.Name)) roleName = role.Name;
-            }
-            var model = new EditUser {
-                UserId = user.Id,
-                UserName = user.UserName,
-                EmailAddress = user.Email,
-                SelectedRole = roleName,
-                Roles = RolesList(rolesList, uId)
-            };
-
-            return View(model);
-        }
+        
 
         //
         // GET: /Manage/ChangeUserName
@@ -249,23 +202,6 @@ namespace BP.Web.Controllers
             return View(model);
         }
 
-        //
-        // Get: /Manage/CreateUser
-        [Route("Manage/CreateUsers")]
-        [RoleGroupAuthorize(GroupIndex = 700)]
-        public ActionResult CreateUsers()
-        {
-            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
-            ViewBag.IPAddress = IPAddress;
-            // we need to role of the current logged in user.  because that user cannot give someone a role higher than their own...that's rule # 1
-            var userId = User.Identity.GetUserId();
-            var rolesList = RoleManager.Roles.OrderBy(y => y.Index).ToList();
-            var model = new CreateUser {
-                Roles = RolesList(rolesList, userId)
-            };
-            return View(model);
-        }
-
         private IEnumerable<SelectListItem> RolesList(IEnumerable<ApplicationRole> rolesList, string userId)
         {
             var currentIndex = 0;
@@ -280,46 +216,7 @@ namespace BP.Web.Controllers
             });
             return returnList;
         }
-
-        [HttpPost]
-        [Route("Manage/CreateUsers")]
-        [ValidateAntiForgeryToken]
-        [RoleGroupAuthorize(GroupIndex = 700)]
-        public async Task<ActionResult> CreateUsers(CreateUser pullModel)
-        {
-            // they are creating a new user
-            // so we gotta do things a little different for this one!
-            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
-            ViewBag.IPAddress = IPAddress;
-            var subject = "Account Registration";
-            var instigator = "User Manager";
-            var system = "Manage Controller";
-            if (ModelState.IsValid)
-            {
-                // they are ready to go!
-                var user = new ApplicationUser {
-                    UserName = pullModel.UserName,
-                    Email = pullModel.EmailAddress
-                };
-                var result = await UserManager.CreateAsync(user, pullModel.PassWord);
-                if (result.Succeeded)
-                {
-                    await UserManager.AddToRoleAsync(user.Id, pullModel.SelectedRole);
-                    await Logger.CreateNewLog($"Successfully created user: {pullModel.UserName} from IPAddress {IPAddress}.", subject, instigator, system);
-                    string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    //  await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
-                    await SMTP.SendNewGmail(user.Email, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
-                    return View("CreationSuccessful");
-                }
-                AddErrors(result);
-            }
-            var userId = User.Identity.GetUserId();
-            var rolesList = RoleManager.Roles.OrderBy(y => y.Index).ToList();
-            pullModel.Roles = RolesList(rolesList, userId);
-            ViewBag.IPAddress = IPAddress;
-            return View(pullModel);
-        }
+        
         //
         // GET: /Manage/AddPhoneNumber
         public ActionResult AddPhoneNumber()
@@ -585,26 +482,35 @@ namespace BP.Web.Controllers
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && _userManager != null)
+            if (disposing)
             {
-                _userManager.Dispose();
-                _userManager = null;
-            }
+                if (_userManager != null)
+                {
+                    _userManager.Dispose();
+                    _userManager = null;
+                }
 
-            if (disposing && _roleManager != null)
-            {
-                _roleManager.Dispose();
-                _roleManager = null;
-            }
-            if (disposing && _logger != null)
-            {
-                _logger.Dispose();
-                _logger = null;
-            }
-            if (disposing && _smtp != null)
-            {
-                _smtp.Dispose();
-                _smtp = null;
+                if (_signInManager != null)
+                {
+                    _signInManager.Dispose();
+                    _signInManager = null;
+                }
+
+                if (_roleManager != null)
+                {
+                    _roleManager.Dispose();
+                    _roleManager = null;
+                }
+                if (_logger != null)
+                {
+                    _logger.Dispose();
+                    _logger = null;
+                }
+                if (_smtp != null)
+                {
+                    _smtp.Dispose();
+                    _smtp = null;
+                }
             }
 
             base.Dispose(disposing);

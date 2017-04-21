@@ -104,6 +104,34 @@ namespace BP.Main.Migrations
             nameFormats.ForEach(h => context.NameFormats.AddOrUpdate(s => s.Index, h));
 
             context.SaveChanges();
+
+            var accountDateTypes = new List<AccountDateType> {
+                new AccountDateType { Index = 1, Name = "Created" },
+                new AccountDateType { Index = 2, Name = "Edited" },
+                new AccountDateType { Index = 3, Name = "Approved" },
+                new AccountDateType { Index = 4, Name = "Locked" },
+                new AccountDateType { Index = 5, Name = "Blocked" },
+                new AccountDateType { Index = 6, Name = "Removed" },
+                new AccountDateType { Index = 7, Name = "Trial Started" },
+                new AccountDateType { Index = 8, Name = "Trial Ending" },
+                new AccountDateType { Index = 9, Name = "Trial Ended" },
+            };
+
+            accountDateTypes.ForEach(h => context.AccountDateTypes.AddOrUpdate(s => s.Index, h));
+
+            var accountTypes = new List<AccountType> {
+                new AccountType { Index = 1, Name = "User" },
+                new AccountType { Index = 2, Name = "Business" },
+                new AccountType { Index = 3, Name = "Trial User" },
+                new AccountType { Index = 4, Name = "Trial Business" },
+                new AccountType { Index = 5, Name = "Sample User" },
+                new AccountType { Index = 6, Name = "Sample Business" },
+                new AccountType { Index = 7, Name = "Test Account" },
+            };
+
+            accountTypes.ForEach(h => context.AccountTypes.AddOrUpdate(s => s.Index, h));
+
+            context.SaveChanges();
         }
     }
 }

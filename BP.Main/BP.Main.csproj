@@ -60,6 +60,10 @@
     <Compile Include="Migrations\201704201452284_entityUpdate02.Designer.cs">
       <DependentUpon>201704201452284_entityUpdate02.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201704211906270_entityUpdate03.cs" />
+    <Compile Include="Migrations\201704211906270_entityUpdate03.Designer.cs">
+      <DependentUpon>201704211906270_entityUpdate03.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -82,6 +86,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201704201452284_entityUpdate02.resx">
       <DependentUpon>201704201452284_entityUpdate02.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704211906270_entityUpdate03.resx">
+      <DependentUpon>201704211906270_entityUpdate03.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -14,6 +14,7 @@ using BP.Service.Providers.Logger;
 using reCaptcha;
 using System.Configuration;
 using Facebook;
+using BP.Service.Providers.Core;
 
 namespace BP.Web.Controllers
 {
@@ -24,17 +25,30 @@ namespace BP.Web.Controllers
         private ApplicationUserManager _userManager;
         CoreLoggerProvider _logger;
         private ApplicationRoleManager _roleManager;
+        private SMTPProvider _smtp;
 
         public AccountController()
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager, CoreLoggerProvider logger)
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager, CoreLoggerProvider logger, SMTPProvider smtp)
         {
             UserManager = userManager;
             SignInManager = signInManager;
             RoleManager = roleManager;
-            _logger = logger;
+            Logger = logger;
+        }
+
+        public SMTPProvider SMTP
+        {
+            get
+            {
+                return _smtp ?? new SMTPProvider();
+            }
+            private set
+            {
+                _smtp = value;
+            }
         }
 
         public CoreLoggerProvider Logger
@@ -82,6 +96,16 @@ namespace BP.Web.Controllers
             {
                 _userManager = value;
             }
+        }
+
+        //
+        // GET: /Account/UnAUthorized
+        [AllowAnonymous]
+        [Route("Account/UnAuthorized")]
+        public ActionResult UnAuthorized()
+        {
+            if (TempData["notallowed"] == null) return View("Error");
+            return View();
         }
         
 
@@ -267,7 +291,7 @@ namespace BP.Web.Controllers
                     // Send an email with this link
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
+                    await SMTP.SendNewGmail(user.Email, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
                     ViewBag.RegisteredEmail = model.Email;
                     return View("RegistrationSuccessful");
                 }
@@ -344,7 +368,7 @@ namespace BP.Web.Controllers
                 // Send an email with this link
                 string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste the link to your URL if your email does not allow you to clink on links.");
+                await SMTP.SendNewGmail(user.Email, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste the link to your URL if your email does not allow you to clink on links.");
                 return RedirectToAction("ForgotPasswordConfirmation", "Account");
             }
 
@@ -634,6 +658,11 @@ namespace BP.Web.Controllers
                 {
                     _logger.Dispose();
                     _logger = null;
+                }
+                if (_smtp != null)
+                {
+                    _smtp.Dispose();
+                    _smtp = null;
                 }
             }
 
