@@ -51,6 +51,16 @@ namespace BP.Services.Services.Business
             return returnList;
         }
 
+        public async Task<MethodResults> CreateNewBusiness(BusinessPullModel pullModel, BPMainContext context)
+        {
+            var methodResults = new MethodResults { Success = false, Message = "Something went wrong.  Please try again, or contact your system administrator." };
+
+            // the pull model should have been validated at the controller
+            
+
+            return methodResults;
+        }
+
         private void Dispose(bool disposing)
         {
             if (disposed)

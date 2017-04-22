@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Web.Mvc;
 
 namespace BP.VM.ViewModels.Business
 {
@@ -12,6 +13,8 @@ namespace BP.VM.ViewModels.Business
 
     public class BusinessPullModel
     {
-
+        public string BusinessName { get; set; }
+        public int BusinessTypeId { get; set; }
+        public IEnumerable<SelectListItem> BusinessTypes { get; set; }
     }
 }

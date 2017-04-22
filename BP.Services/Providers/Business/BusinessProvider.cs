@@ -18,10 +18,38 @@ namespace BP.Services.Providers.Business
         BPMainContext _context;
         BusinessService _service;
 
-        public BusinessProvider()
+        public BusinessProvider() { }
+        public BusinessProvider(BPMainContext context) : this(context, null) { }
+        public BusinessProvider(BusinessService service) : this(null, service) { }
+
+        public BusinessProvider(BPMainContext context, BusinessService service)
         {
-            _context = new BPMainContext();
-            _service = new BusinessService();
+            _context = context;
+            _service = service;
+        }
+
+        public BPMainContext Context
+        {
+            get
+            {
+                return _context ?? new BPMainContext();
+            }
+            private set
+            {
+                _context = value;
+            }
+        }
+
+        public BusinessService Service
+        {
+            get
+            {
+                return _service ?? new BusinessService();
+            }
+            private set
+            {
+                _service = value;
+            }
         }
 
         bool disposed = false;
@@ -29,24 +57,19 @@ namespace BP.Services.Providers.Business
 
         public async Task<IEnumerable<BusinessViewModel>> ViewAllBusinesses()
         {
-            var coreBusiness = await _context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 2).ToListAsync();
-            var trialBusiness = await _context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 4).ToListAsync();
-            var sampleBusiness = await _context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 6).ToListAsync();
+            var coreBusiness = await Context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 2).ToListAsync();
+            var trialBusiness = await Context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 4).ToListAsync();
+            var sampleBusiness = await Context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 6).ToListAsync();
             var prefinal = coreBusiness.Union(trialBusiness);
             var finalList = prefinal.Union(sampleBusiness);
             // now I have the full list of all businesses in the db
-            return await _service.PopulateBusinessValues(finalList, _context);
+            return await Service.PopulateBusinessValues(finalList, Context);
 
         }
 
         public async Task<MethodResults> CreateNewBusiness(BusinessPullModel pullModel)
         {
-            var methodResults = new MethodResults {
-                Success = false,
-                Message = "Something has gone wrong.  Please try again"
-            };
-
-            return methodResults;
+            return await Service.CreateNewBusiness(pullModel, Context);
         }
 
         public void Dispose()

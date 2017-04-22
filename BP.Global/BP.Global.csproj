@@ -90,8 +90,15 @@
     <Compile Include="Models\Main\AccountDate.cs" />
     <Compile Include="Models\Main\AccountDateType.cs" />
     <Compile Include="Models\Main\AccountType.cs" />
+    <Compile Include="Models\Main\Address.cs" />
+    <Compile Include="Models\Main\AddressCityAttribute.cs" />
+    <Compile Include="Models\Main\AddressType.cs" />
     <Compile Include="Models\Main\BusinessAttribute.cs" />
     <Compile Include="Models\Main\BusinessType.cs" />
+    <Compile Include="Models\Main\City.cs" />
+    <Compile Include="Models\Main\Country.cs" />
+    <Compile Include="Models\Main\District.cs" />
+    <Compile Include="Models\Main\FormName.cs" />
     <Compile Include="Models\Main\EntityAttribute.cs" />
     <Compile Include="Models\Main\EntityPreferenceAttribute.cs" />
     <Compile Include="Models\Main\Gender.cs" />
@@ -104,7 +111,10 @@
     <Compile Include="Models\Main\NameFormatMap.cs" />
     <Compile Include="Models\Main\NewsLetter.cs" />
     <Compile Include="Models\Main\LoginPreferenceAttribute.cs" />
+    <Compile Include="Models\Main\PostalCode.cs" />
     <Compile Include="Models\Main\ProfileAttribute.cs" />
+    <Compile Include="Models\Main\StreetAttribute.cs" />
+    <Compile Include="Models\Main\StringTable.cs" />
     <Compile Include="Models\Main\Title.cs" />
     <Compile Include="Models\Main\UserAttribute.cs" />
     <Compile Include="Models\Main\UserName.cs" />
