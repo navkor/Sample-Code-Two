@@ -66,10 +66,18 @@ namespace BP.Main.DataBase
         public DbSet<AccountDate> AccountDates { get; set; }
         public DbSet<AccountDateType> AccountDateTypes { get; set; }
         public DbSet<AccountType> AccountTypes { get; set; }
+        public DbSet<Address> Addresses { get; set; }
+        public DbSet<AddressCityAttribute> AddressCityAttributes { get; set; }
+        public DbSet<AddressType> AddressTypes { get; set; }
         public DbSet<BusinessAttribute> BusinessAttributes { get; set; }
+        public DbSet<BusinessProgramAttribute> BusinessProgramAttributes { get; set; }
         public DbSet<BusinessType> BusinessTypes { get; set; }
+        public DbSet<City> Cities { get; set; }
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<District> Districts { get; set; }
         public DbSet<EntityAttribute> EntityAttributes { get; set; }
         public DbSet<EntityPreferenceAttribute> EntityPreferenceAttributes { get; set; }
+        public DbSet<FormName> FormNames { get; set; }
         public DbSet<Gender> Genders { get; set; }
         public DbSet<KeyWord> KeyWords { get; set; }
         public DbSet<LoginAttribute> LoginAttributes { get; set; }
@@ -80,11 +88,15 @@ namespace BP.Main.DataBase
         public DbSet<NameFormat> NameFormats { get; set; }
         public DbSet<NameFormatMap> NameFormatMaps { get; set; }
         public DbSet<NewsLetter> NewsLetters { get; set; }
+        public DbSet<PostalCode> PostalCodes { get; set; }
         public DbSet<ProfileAttribute> ProfileAttributes { get; set; }
+        public DbSet<StreetAttribute> StreetAttributes { get; set; }
+        public DbSet<StringTable> StringTables { get; set; }
         public DbSet<Title> Titles { get; set; }
         public DbSet<UserAttribute> UserAttributes { get; set; }
         public DbSet<UserName> UserNames { get; set; }
         public DbSet<UserNameType> UserNameTypes { get; set; }
+        public DbSet<UserProgramAttribute> UserProgramAttributes { get; set; }
         #endregion
 
 

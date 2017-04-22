@@ -55,7 +55,12 @@ namespace BP.Services.Providers.Business
         bool disposed = false;
         SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);
 
-        public async Task<IEnumerable<BusinessViewModel>> ViewAllBusinesses()
+        public async Task<BusinessPullModel> UpdatePullModel(BusinessPullModel pullModel)
+        {
+            return await Service.UpdatePullModel(pullModel, Context);
+        }
+
+        public async Task<IEnumerable<BusinessViewModel>> ViewAllBusinesses(IEnumerable<NameStringId> userList)
         {
             var coreBusiness = await Context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 2).ToListAsync();
             var trialBusiness = await Context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 4).ToListAsync();
@@ -63,7 +68,7 @@ namespace BP.Services.Providers.Business
             var prefinal = coreBusiness.Union(trialBusiness);
             var finalList = prefinal.Union(sampleBusiness);
             // now I have the full list of all businesses in the db
-            return await Service.PopulateBusinessValues(finalList, Context);
+            return await Service.PopulateBusinessValues(finalList, Context, userList);
 
         }
 

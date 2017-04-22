@@ -361,6 +361,10 @@
     <Content Include="Areas\Users\Views\Registered\Profile.cshtml" />
     <Content Include="Areas\Admin\Views\web.config" />
     <Content Include="Areas\WebMaster\Views\web.config" />
+    <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\_Layout.cshtml" />
+    <Content Include="Areas\Admin\Views\BusinessAdmin\CreateBusiness.cshtml" />
+    <Content Include="Areas\Admin\Views\BusinessAdmin\ViewBusiness.cshtml" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -432,8 +436,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Areas\Admin\Models\" />
-    <Folder Include="Areas\Admin\Views\BusinessAdmin\" />
-    <Folder Include="Areas\Admin\Views\Shared\" />
     <Folder Include="Areas\Users\Models\" />
     <Folder Include="Areas\Users\Views\Profile\" />
     <Folder Include="Areas\WebMaster\Controllers\" />

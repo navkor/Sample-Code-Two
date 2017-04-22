@@ -94,6 +94,7 @@
     <Compile Include="Models\Main\AddressCityAttribute.cs" />
     <Compile Include="Models\Main\AddressType.cs" />
     <Compile Include="Models\Main\BusinessAttribute.cs" />
+    <Compile Include="Models\Main\BusinessProgramAttribute.cs" />
     <Compile Include="Models\Main\BusinessType.cs" />
     <Compile Include="Models\Main\City.cs" />
     <Compile Include="Models\Main\Country.cs" />
@@ -119,6 +120,7 @@
     <Compile Include="Models\Main\UserAttribute.cs" />
     <Compile Include="Models\Main\UserName.cs" />
     <Compile Include="Models\Main\UserNameType.cs" />
+    <Compile Include="Models\Main\UserProgramAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RouteValueDictionary\RouteHandling.cs" />
     <Compile Include="RouteValueDictionary\RouteValueDictionaryControls.cs" />

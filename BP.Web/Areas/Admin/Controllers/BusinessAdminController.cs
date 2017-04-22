@@ -1,5 +1,7 @@
 ﻿using BP.Service.Providers.Core;
 using BP.Service.Providers.Logger;
+using BP.Services.Providers.Business;
+using BP.VM.ViewModels.Business;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using System;
@@ -16,16 +18,18 @@ namespace BP.Web.Areas.Admin.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private BusinessProvider _provider;
         CoreLoggerProvider _logger;
         private ApplicationRoleManager _roleManager;
         private SMTPProvider _smtp;
         public BusinessAdminController() { }
-        public BusinessAdminController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager, CoreLoggerProvider logger, SMTPProvider smtp)
+        public BusinessAdminController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager, CoreLoggerProvider logger, SMTPProvider smtp, BusinessProvider provider)
         {
             UserManager = userManager;
             SignInManager = signInManager;
             RoleManager = roleManager;
             Logger = logger;
+            Provider = provider;
         }
 
         public SMTPProvider SMTP
@@ -88,13 +92,64 @@ namespace BP.Web.Areas.Admin.Controllers
             }
         }
 
+        public BusinessProvider Provider
+        {
+            get {
+                return _provider ?? new BusinessProvider();
+            }
+            private set {
+                _provider = value;
+            }
+        }
+
         [Route("Admin/BusinessAdmin/ViewBusiness")]
         public async Task<ActionResult> ViewBusiness()
         {
             var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             ViewBag.IPAddress = IPAddress;
+            var businessList = await Provider.ViewAllBusinesses(UserManager.Users.Select(x => new NameStringId {
+                ID = x.Id,
+                Name = x.UserName
+            }).ToList());
+            return View(businessList);
+        }
 
-            return View();
+        [Route("Admin/BusinessAdmin/CreateBusiness")]
+        public async Task<ActionResult> CreateBusiness()
+        {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            var pullModel = await Provider.UpdatePullModel(new BusinessPullModel());
+            return View(pullModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("Admin/BusinessAdmin/CreateBusiness")]
+        public async Task<ActionResult> CreateBusiness(BusinessPullModel pullModel)
+        {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            var subject = "Create A Business";
+            var instigator = "Admin Business Form";
+            var system = "Business Admin Controller";
+            if (ModelState.IsValid)
+            {
+                if (pullModel.BusinessTypeId > 0)
+                {
+                    // everything is just fine
+                    var methodResults = await Provider.CreateNewBusiness(pullModel);
+                    if (methodResults.Success)
+                    {
+                        await Logger.CreateNewLog($"Successfully created {pullModel.BusinessName} from {IPAddress}", subject, instigator, system);
+                        return RedirectToAction("ViewBusiness");
+                    }
+                    ModelState.AddModelError("", methodResults.Message);
+                }
+                else ModelState.AddModelError(nameof(BusinessPullModel.BusinessTypeId), "Please select a business type before continuing...");
+            }
+            pullModel = await Provider.UpdatePullModel(pullModel);
+            return View(pullModel);
         }
 
         protected override void Dispose(bool disposing)
@@ -127,6 +182,11 @@ namespace BP.Web.Areas.Admin.Controllers
                 {
                     _smtp.Dispose();
                     _smtp = null;
+                }
+                if (_provider != null)
+                {
+                    _provider.Dispose();
+                    _provider = null;
                 }
             }
 

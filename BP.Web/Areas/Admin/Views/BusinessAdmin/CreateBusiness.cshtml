@@ -1,0 +1,39 @@
+﻿@model BP.VM.ViewModels.Business.BusinessPullModel
+@{
+    ViewBag.Title = "Create A New Business";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm("CreateBusiness", "BusinessAdmin", new { area = "Admin" }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    <h4>Create a new user.</h4>
+    <p>Your IP Address is @ViewBag.IPAddress</p>
+    <hr />
+    @Html.ValidationSummary("", new { @class = "text-danger" })
+    <div class="form-group">
+        @Html.LabelFor(m => m.BusinessName, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.BusinessName, new { @class = "form-control", placeholder = "Enter business name here" })
+            @Html.ValidationMessageFor(m => m.BusinessName, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.BusinessTypeId, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.DropDownListFor(model => model.BusinessTypeId, Model.BusinessTypes, htmlAttributes: new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.BusinessTypeId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Create" class="btn btn-default" />
+            @Html.RouteLink("Back to list", new { controller = "BusinessAdmin", action = "ViewBusiness", area = "Admin" })
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
