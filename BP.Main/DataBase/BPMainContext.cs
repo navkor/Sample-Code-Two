@@ -66,6 +66,8 @@ namespace BP.Main.DataBase
         public DbSet<AccountDate> AccountDates { get; set; }
         public DbSet<AccountDateType> AccountDateTypes { get; set; }
         public DbSet<AccountType> AccountTypes { get; set; }
+        public DbSet<BusinessAttribute> BusinessAttributes { get; set; }
+        public DbSet<BusinessType> BusinessTypes { get; set; }
         public DbSet<EntityAttribute> EntityAttributes { get; set; }
         public DbSet<EntityPreferenceAttribute> EntityPreferenceAttributes { get; set; }
         public DbSet<Gender> Genders { get; set; }
@@ -80,6 +82,7 @@ namespace BP.Main.DataBase
         public DbSet<NewsLetter> NewsLetters { get; set; }
         public DbSet<ProfileAttribute> ProfileAttributes { get; set; }
         public DbSet<Title> Titles { get; set; }
+        public DbSet<UserAttribute> UserAttributes { get; set; }
         public DbSet<UserName> UserNames { get; set; }
         public DbSet<UserNameType> UserNameTypes { get; set; }
         #endregion

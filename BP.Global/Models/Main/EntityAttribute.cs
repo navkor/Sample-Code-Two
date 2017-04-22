@@ -17,6 +17,5 @@ namespace BP.Global.Models.Main
         public virtual AccountType AccountType { get; set; }
         public virtual ICollection<AccountDate> AccountDates { get; set; }
         public virtual EntityPreferenceAttribute EntityPreferenceAttribute { get; set; }
-        public string AccountName { get; set; }
     }
 }

@@ -132,6 +132,21 @@ namespace BP.Main.Migrations
             accountTypes.ForEach(h => context.AccountTypes.AddOrUpdate(s => s.Index, h));
 
             context.SaveChanges();
+
+            var businessTypes = new List<BusinessType> {
+                new BusinessType { Index = 1, Name = "Retail" },
+                new BusinessType { Index = 2, Name = "Wholesale" },
+                new BusinessType { Index = 3, Name = "BusinessToBusiness" },
+                new BusinessType { Index = 4, Name = "Service" },
+                new BusinessType { Index = 5, Name = "Retail Service" },
+                new BusinessType { Index = 6, Name = "Wholesale Service" },
+                new BusinessType { Index = 7, Name = "Maintenance" },
+                new BusinessType { Index = 8, Name = "Versatile" },
+            };
+
+            businessTypes.ForEach(h => context.BusinessTypes.AddOrUpdate(s => s.Index, h));
+
+            context.SaveChanges();
         }
     }
 }

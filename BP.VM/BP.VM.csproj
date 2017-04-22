@@ -74,5 +74,8 @@
     <Folder Include="PullModels\EntityFramework\" />
     <Folder Include="ViewModels\EntityFramework\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -90,6 +90,8 @@
     <Compile Include="Models\Main\AccountDate.cs" />
     <Compile Include="Models\Main\AccountDateType.cs" />
     <Compile Include="Models\Main\AccountType.cs" />
+    <Compile Include="Models\Main\BusinessAttribute.cs" />
+    <Compile Include="Models\Main\BusinessType.cs" />
     <Compile Include="Models\Main\EntityAttribute.cs" />
     <Compile Include="Models\Main\EntityPreferenceAttribute.cs" />
     <Compile Include="Models\Main\Gender.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="Models\Main\LoginPreferenceAttribute.cs" />
     <Compile Include="Models\Main\ProfileAttribute.cs" />
     <Compile Include="Models\Main\Title.cs" />
+    <Compile Include="Models\Main\UserAttribute.cs" />
     <Compile Include="Models\Main\UserName.cs" />
     <Compile Include="Models\Main\UserNameType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -16,6 +16,11 @@
         public bool Selected { get; set; }
     }
 
+    public class NameIdValueNoteLists : NameIdValueLists
+    {
+        public string Note { get; set; }
+    }
+
     public class IdIndexLists
     {
         public int ID { get; set; }

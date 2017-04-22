@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace BP.Auth.Models
+namespace BP.Web.Models
 {
     public class ExternalLoginConfirmationViewModel
     {
