@@ -7,13 +7,13 @@ namespace BP.Logger.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class initialMigration : IMigrationMetadata
+    public sealed partial class entityUpdate01 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(initialMigration));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(entityUpdate01));
         
         string IMigrationMetadata.Id
         {
-            get { return "201704141618153_initialMigration"; }
+            get { return "201704251650123_entityUpdate01"; }
         }
         
         string IMigrationMetadata.Source

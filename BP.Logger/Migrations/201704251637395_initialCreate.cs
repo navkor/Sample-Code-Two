@@ -3,7 +3,7 @@ namespace BP.Logger.Migrations
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class initialMigration : DbMigration
+    public partial class initialCreate : DbMigration
     {
         public override void Up()
         {

@@ -48,25 +48,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataBase\BPMainContext.cs" />
-    <Compile Include="Migrations\201704181948210_initialMigration.cs" />
-    <Compile Include="Migrations\201704181948210_initialMigration.Designer.cs">
-      <DependentUpon>201704181948210_initialMigration.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201704201417429_entityUpdate01.cs" />
-    <Compile Include="Migrations\201704201417429_entityUpdate01.Designer.cs">
-      <DependentUpon>201704201417429_entityUpdate01.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201704201452284_entityUpdate02.cs" />
-    <Compile Include="Migrations\201704201452284_entityUpdate02.Designer.cs">
-      <DependentUpon>201704201452284_entityUpdate02.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201704211906270_entityUpdate03.cs" />
-    <Compile Include="Migrations\201704211906270_entityUpdate03.Designer.cs">
-      <DependentUpon>201704211906270_entityUpdate03.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201704221451415_entityUpdate04.cs" />
-    <Compile Include="Migrations\201704221451415_entityUpdate04.Designer.cs">
-      <DependentUpon>201704221451415_entityUpdate04.cs</DependentUpon>
+    <Compile Include="Migrations\201704251636307_initialCreate.cs" />
+    <Compile Include="Migrations\201704251636307_initialCreate.Designer.cs">
+      <DependentUpon>201704251636307_initialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -82,20 +66,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201704181948210_initialMigration.resx">
-      <DependentUpon>201704181948210_initialMigration.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704201417429_entityUpdate01.resx">
-      <DependentUpon>201704201417429_entityUpdate01.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704201452284_entityUpdate02.resx">
-      <DependentUpon>201704201452284_entityUpdate02.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704211906270_entityUpdate03.resx">
-      <DependentUpon>201704211906270_entityUpdate03.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704221451415_entityUpdate04.resx">
-      <DependentUpon>201704221451415_entityUpdate04.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201704251636307_initialCreate.resx">
+      <DependentUpon>201704251636307_initialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

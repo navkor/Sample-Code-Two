@@ -1,8 +1,10 @@
 namespace BP.Logger.Migrations
 {
     using System;
+    using System.Collections.Generic;
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
+    using BP.Global.Models.Logger;
     using System.Linq;
 
     internal sealed class Configuration : DbMigrationsConfiguration<BP.Logger.Database.BPLoggerContext>
@@ -26,6 +28,13 @@ namespace BP.Logger.Migrations
             //      new Person { FullName = "Rowan Miller" }
             //    );
             //
+
+            var newEmail = new List<SMTPAccount> {
+                new SMTPAccount { AddressLimits = 10000, AppSettings = "noReply1Password", DailyLimits = 2000, PerMessageAddressLimits = 100, UserName = "noreply@basicallyprepared.com" },
+            };
+
+            newEmail.ForEach(h => context.SMTPAccounts.AddOrUpdate(s => s.UserName, h));
+            context.SaveChanges();
         }
     }
 }

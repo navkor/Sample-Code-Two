@@ -84,6 +84,8 @@
     <Compile Include="Models\Auth\UserName.cs" />
     <Compile Include="Models\Logger\Instigator.cs" />
     <Compile Include="Models\Logger\Log.cs" />
+    <Compile Include="Models\Logger\SMTPAccounts.cs" />
+    <Compile Include="Models\Logger\SMTPMessages.cs" />
     <Compile Include="Models\Logger\Subject.cs" />
     <Compile Include="Models\Logger\System.cs" />
     <Compile Include="Models\Main\Account.cs" />

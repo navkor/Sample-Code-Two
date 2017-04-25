@@ -144,6 +144,7 @@
     <Compile Include="Providers\Logger\CoreLoggerProvider.cs" />
     <Compile Include="Services\Business\BusinessService.cs" />
     <Compile Include="Services\Core\CookieService.cs" />
+    <Compile Include="Services\Core\SMTPMessageService.cs" />
     <Compile Include="Services\Core\SMTPService.cs" />
     <Compile Include="Services\Logger\CoreLoggerServices.cs" />
   </ItemGroup>

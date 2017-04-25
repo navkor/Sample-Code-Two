@@ -72,6 +72,7 @@
     <Compile Include="ViewModels\Authentication\CookieViewModel.cs" />
     <Compile Include="ViewModels\Authentication\LoggedInUserVM.cs" />
     <Compile Include="ViewModels\Business\BusinessViewPullModel.cs" />
+    <Compile Include="ViewModels\Core\SMTP\SMTPCreateMessage.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BP.Auth\BP.Auth.csproj">
