@@ -173,16 +173,20 @@ namespace BP.Web.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
+                    instigator = await GetUserEmailByLoginCredential(model.Email);
                     await Logger.CreateNewLog($"{model.Email} successfully logged in using Username/Password from {ipAddress}", subject, instigator, system);
                     return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:
+                    instigator = await GetUserEmailByLoginCredential(model.Email);
                     await Logger.CreateNewLog($"{model.Email} account locked out using Username/Password from {ipAddress}", subject, instigator, system);
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
+                    instigator = await GetUserEmailByLoginCredential(model.Email);
                     await Logger.CreateNewLog($"{model.Email} requires verification before logging in using Username/Password from {ipAddress}", subject, instigator, system);
                     return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
                 case SignInStatus.Failure:
                 default:
+                    instigator = await GetUserEmailByLoginCredential(model.Email);
                     await Logger.CreateNewLog($"{model.Email} failed log in using Username/Password from {ipAddress}", subject, instigator, system);
                     model.partialView = "partials/loginTwoPartial";
                     model.pageTitle = "Login Step Two";
@@ -193,6 +197,17 @@ namespace BP.Web.Controllers
                     ModelState.AddModelError("", "Invalid login attempt.");
                     return View(model);
             }
+        }
+
+        internal async Task<string> GetUserEmailByLoginCredential(string email)
+        {
+            var user = await UserManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                user = await UserManager.FindByNameAsync(email);
+                if (user == null) return "Account Not Found";
+            }
+            return user.Email;
         }
 
         internal async Task<string> GetUserUserName(string userName)
@@ -242,11 +257,19 @@ namespace BP.Web.Controllers
             // will be locked out for a specified amount of time. 
             // You can configure the account lockout settings in IdentityConfig
             var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent:  model.RememberMe, rememberBrowser: model.RememberBrowser);
+            var user = new ApplicationUser();
             switch (result)
             {
                 case SignInStatus.Success:
+                    user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                    instigator = user.Email;
+                    await Logger.CreateNewLog($"Account successfully verified using Verify Code Model on {IPAddress} for {instigator}", subject, instigator, system);
                     return RedirectToLocal(model.ReturnUrl);
                 case SignInStatus.LockedOut:
+                    user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                    instigator = user.Email;
+                    subject = "Account Locked";
+                    await Logger.CreateNewLog($"Account unsuccessfully verified using Verify Code Model on {IPAddress} for {instigator}. Account Locked.", subject, instigator, system);
                     return View("Lockout");
                 case SignInStatus.Failure:
                 default:
@@ -284,6 +307,7 @@ namespace BP.Web.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    instigator = model.Email;
                     await Logger.CreateNewLog($"Successful registration for {model.Email} on IPAddress {IPAddress}", subject, instigator, system);
                    // await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
 
@@ -291,7 +315,7 @@ namespace BP.Web.Controllers
                     // Send an email with this link
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    await SMTP.SendNewGmail(user.Email, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
+                    await SMTP.SendNewEmail("noreply@basicallyprepared.com", model.Email, "Basically Prepared", "", "Confirm Account Create", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.", "NewAccount");
                     ViewBag.RegisteredEmail = model.Email;
                     return View("RegistrationSuccessful");
                 }
@@ -326,6 +350,7 @@ namespace BP.Web.Controllers
                 var user = await UserManager.FindByIdAsync(userId);
                 var role = await RoleManager.Roles.FirstOrDefaultAsync(x => x.Index == 1);
                 await UserManager.AddToRoleAsync(userId, role.Name);
+                instigator = user.Email;
                 await Logger.CreateNewLog($"Successfully confirmed email for {user.UserName} on IPAddress {IPAddress}", subject, instigator, system);
                 return View("ConfirmEmail");
             }
@@ -368,7 +393,9 @@ namespace BP.Web.Controllers
                 // Send an email with this link
                 string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                await SMTP.SendNewGmail(user.Email, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste the link to your URL if your email does not allow you to clink on links.");
+                instigator = user.Email;
+                await SMTP.SendNewEmail("noreply@basicallyprepared.com", user.Email, "Basically Prepared", "", "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste the link to your URL if your email does not allow you to clink on links.", "PasswordReset");
+                await Logger.CreateNewLog($"Password reset request successful for {instigator} on {IPAddress}.", subject, instigator, system);
                 return RedirectToAction("ForgotPasswordConfirmation", "Account");
             }
 
@@ -523,8 +550,9 @@ namespace BP.Web.Controllers
                     user.EmailConfirmed = true;
                     await UserManager.UpdateAsync(user);
                     await UserManager.AddToRoleAsync(user.Id, role.Name);
-                    var instigator = loginInfo.Login.LoginProvider;
-                    await Logger.CreateNewLog($"{loginInfo.Email} successfully logged in using {instigator} from {IPAddress}", subject, instigator, system);
+                    var loginProvider = loginInfo.Login.LoginProvider;
+                    var instigator = loginInfo.Email;
+                    await Logger.CreateNewLog($"{loginInfo.Email} successfully logged in using {loginProvider} from {IPAddress}", subject, instigator, system);
                     return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:
                     return View("Lockout");
@@ -594,8 +622,9 @@ namespace BP.Web.Controllers
                     result = await UserManager.AddLoginAsync(user.Id, info.Login);
                     if (result.Succeeded)
                     {
-                        var instigator = info.Login.LoginProvider;
-                        await Logger.CreateNewLog($"{info.Email} successfully logged in using {instigator} from {IPAddress}", subject, instigator, system);
+                        var loginProvider = info.Login.LoginProvider;
+                        var instigator = info.Email;
+                        await Logger.CreateNewLog($"{info.Email} successfully logged in using {loginProvider} from {IPAddress}", subject, instigator, system);
                         await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
                         return RedirectToLocal(returnUrl);
                     }
@@ -617,8 +646,9 @@ namespace BP.Web.Controllers
             ViewBag.IPAddress = IPAddress;
             var subject = "Account Logoff";
             var system = "Account Controller";
-            var instigator = "LogOff Button";
-            await Logger.CreateNewLog($"{User.Identity.Name} successfully logged out using {instigator} from {IPAddress}", subject, instigator, system);
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            var instigator = user.Email;
+            await Logger.CreateNewLog($"{User.Identity.Name} successfully logged out using the LogOff button from {IPAddress}", subject, instigator, system);
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
             return RedirectToAction("Index", "Home");
         }

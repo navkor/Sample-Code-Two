@@ -3,14 +3,13 @@ using BP.Main.DataBase;
 using BP.VM.ViewModels.Business;
 using Microsoft.Win32.SafeHandles;
 using System;
-using System.Collections;
 using System.Data.Entity;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
+using BPAccount = BP.Global.Models.Main.Account;
 using System.Web.Mvc;
 
 namespace BP.Services.Services.Business
@@ -27,7 +26,7 @@ namespace BP.Services.Services.Business
             GC.SuppressFinalize(this);
         }
 
-        public async Task<IEnumerable<BusinessViewModel>> PopulateBusinessValues(IEnumerable<Account> businessList, BPMainContext context, IEnumerable<NameStringId> userList)
+        public async Task<IEnumerable<BusinessViewModel>> PopulateBusinessValues(IEnumerable<BPAccount> businessList, BPMainContext context, IEnumerable<NameStringId> userList)
         {
             var returnList = new ConcurrentBag<BusinessViewModel>();
             await Task.Run(() => Parallel.ForEach(businessList, business => {
@@ -80,7 +79,7 @@ namespace BP.Services.Services.Business
 
             // the pull model should have been validated at the controller
             // first, create the account
-            var account = new Account() {
+            var account = new BPAccount() {
                 BusinessAttribute = new BusinessAttribute(),
                 EntityAttribute = new EntityAttribute()
             };

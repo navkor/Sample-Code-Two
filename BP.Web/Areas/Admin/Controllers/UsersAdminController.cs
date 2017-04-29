@@ -96,7 +96,8 @@ namespace BP.Web.Areas.Admin.Controllers
             // this will return a list of users in the system and return them to the view
             var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
             ViewBag.IPAddress = IPAddress;
-            var users = await UserManager.Users.Select(x => new UserModels {
+            var myId = User.Identity.GetUserId();
+            var users = await UserManager.Users.Where(x => x.Id != myId).Select(x => new UserModels {
                 UserId = x.Id,
                 UserName = x.UserName,
                 EmailAddress = x.Email,
@@ -144,10 +145,12 @@ namespace BP.Web.Areas.Admin.Controllers
                 if (result.Succeeded)
                 {
                     await UserManager.AddToRoleAsync(user.Id, pullModel.SelectedRole);
+                    var adminUser = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                    instigator = adminUser.Email;
                     await Logger.CreateNewLog($"Successfully created user: {pullModel.UserName} from IPAddress {IPAddress}.", subject, instigator, system);
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    await SMTP.SendNewGmail(user.Email, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.");
+                    await SMTP.SendNewEmail("noreply@basicallyprepared.com", user.Email, "Basically Prepared", "", "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.", "CreateAccount");
                     return RedirectToAction("ViewUsers", new { controller = "UsersAdmin", area = "Admin" });
                 }
                 AddErrors(result);
@@ -209,6 +212,7 @@ namespace BP.Web.Areas.Admin.Controllers
                     current.EmailConfirmed = false;
                 }
                 keepRole = await UserManager.IsInRoleAsync(current.Id, model.SelectedRole);
+                var adminUser = new ApplicationUser();
                 var result = await UserManager.UpdateAsync(current);
                 if (result.Succeeded)
                 {
@@ -217,7 +221,7 @@ namespace BP.Web.Areas.Admin.Controllers
                     {
                         string code = await UserManager.GenerateEmailConfirmationTokenAsync(current.Id);
                         var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = current.Id, code = code }, protocol: Request.Url.Scheme);
-                        await SMTP.SendNewGmail(current.Email, "Confirm your new email", "Please confirm your new email address by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.<br /><p>Until you confirm your email address, you won't be able to log into your account.</p>");
+                        await SMTP.SendNewEmail("noreply@basicallyprepared.com", current.Email, "Basically Prepared", "", "Confirm your new email", "Please confirm your new email address by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.<br /><p>Until you confirm your email address, you won't be able to log into your account.</p>", "NewAccount");
                     }
                     if (!keepRole)
                     {
@@ -237,6 +241,8 @@ namespace BP.Web.Areas.Admin.Controllers
                     }
                     if (success)
                     {
+                        adminUser = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                        instigator = adminUser.Email;
                         await Logger.CreateNewLog($"Successfully updated and edited user {current.UserName} on {IPAddress}", subject, instigator, system);
                         return RedirectToAction("ViewUsers", new { controller = "UsersAdmin", area = "Admin" });
                     }
@@ -244,6 +250,8 @@ namespace BP.Web.Areas.Admin.Controllers
                 var sb = new StringBuilder();
                 sb.Append("There were some errors with updating this user:");
                 sb.AppendLine("");
+                adminUser = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                instigator = adminUser.Email;
                 await Logger.CreateNewLog($"Failed to update and edit user {current.UserName} on {IPAddress}", subject, instigator, system);
                 foreach (var er in result.Errors)
                 {

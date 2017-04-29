@@ -5,10 +5,9 @@ using SendGrid.Helpers.Mail;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Google.Apis.Gmail.v1;
-using Google.Apis.Gmail.v1.Data;
 using System.Net.Mail;
 using System.Text;
+using System.Collections.Generic;
 
 namespace BP.Service.Providers.Core
 {
@@ -18,7 +17,19 @@ namespace BP.Service.Providers.Core
 
         public SMTPProvider()
         {
-            _service = new SMTPService();
+            Service = new SMTPService();
+        }
+
+        public SMTPService Service
+        {
+            get
+            {
+                return _service ?? new SMTPService();
+            }
+            private set
+            {
+                _service = value;
+            }
         }
         public async Task SendNewEmail(string from, string to, string fromName, string toName, string subject, string body, string purpose)
         {
@@ -28,21 +39,12 @@ namespace BP.Service.Providers.Core
             message.SetSubject(subject);
             message.AddContent(MimeType.Text, body);
             message.AddContent(MimeType.Html, body);
-            _service = new SMTPService(message);
-            await _service.SendMailAsync(purpose);
+            var tos = new List<string> {
+                to
+            };
+            await Service.SendMailAsync(purpose, message, tos);
         }
-        public async Task SendNewGmail(string to, string subject, string message)
-        {
-            MailMessage smtpMail = new MailMessage(
-                from: "michael@basicallyprepared.com",
-                to: to,
-                subject: subject,
-                body: message
-            );
-            smtpMail.IsBodyHtml = true;
-            smtpMail.BodyEncoding = Encoding.UTF8;
-            await _service.SendGmailMessage(smtpMail);
-        }
+
         // Flag: Has Dispose already been called?
         bool disposed = false;
         // Instantiate a SafeHandle instance.

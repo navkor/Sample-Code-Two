@@ -141,6 +141,8 @@ namespace BP.Web.Areas.Admin.Controllers
                     var methodResults = await Provider.CreateNewBusiness(pullModel);
                     if (methodResults.Success)
                     {
+                        var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                        instigator = user.Email;
                         await Logger.CreateNewLog($"Successfully created {pullModel.BusinessName} from {IPAddress}", subject, instigator, system);
                         return RedirectToAction("ViewBusiness");
                     }

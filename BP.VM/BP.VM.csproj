@@ -68,6 +68,7 @@
     <Compile Include="PullModels\Authentication\CookiePullModel.cs" />
     <Compile Include="PullModels\Authentication\LoginRegister.cs" />
     <Compile Include="PullModels\Authentication\ResetPullModel.cs" />
+    <Compile Include="ViewModels\AccountAdmin\AccountAdminViewModel.cs" />
     <Compile Include="ViewModels\Authentication\AccountRegistered.cs" />
     <Compile Include="ViewModels\Authentication\CookieViewModel.cs" />
     <Compile Include="ViewModels\Authentication\LoggedInUserVM.cs" />
@@ -93,6 +94,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="PullModels\AccountAdmin\" />
     <Folder Include="PullModels\EntityFramework\" />
     <Folder Include="ViewModels\EntityFramework\" />
   </ItemGroup>

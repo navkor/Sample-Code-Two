@@ -5,7 +5,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
-namespace BP.Auth.Models
+namespace BP
 {
     public class UserModels
     {

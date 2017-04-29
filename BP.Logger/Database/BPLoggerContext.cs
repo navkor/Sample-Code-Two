@@ -20,14 +20,6 @@ namespace BP.Logger.Database
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-            modelBuilder.Entity<SMTPMessage>()
-                .HasMany(c => c.ToAddresses)
-                .WithMany(s => s.SMTPMessages)
-                .Map(cs => {
-                    cs.MapLeftKey("ToSMTPMessageId");
-                    cs.MapRightKey("SMTPMessageToId");
-                    cs.ToTable("SMTPMessageToAddressTable");
-                });
         }
 
         #region Put DbSets here
@@ -35,11 +27,6 @@ namespace BP.Logger.Database
         public DbSet<Log> Logs { get; set; }
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<BPSystem> Systems { get; set; }
-        public DbSet<SMTPAccount> SMTPAccounts { get; set; }
-        public DbSet<SMTPAttachment> SMTPAttachments { get; set; }
-        public DbSet<SMTPMessage> SMTPMessages { get; set; }
-        public DbSet<SMTPTo> SMTPTos { get; set; }
-        public DbSet<SMTPSendDate> SMTPSendDates { get; set; }
         #endregion
 
         public async Task<MethodResults> SaveChangesAsync(BPLoggerContext context)

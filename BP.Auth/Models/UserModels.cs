@@ -12,6 +12,7 @@ namespace BP.Web.Models
         public string UserId { get; set; }
         public string UserName { get; set; }
         public string EmailAddress { get; set; }
+        public bool Me { get; set; }
         public bool EmailVerified { get; set; }
     }
 

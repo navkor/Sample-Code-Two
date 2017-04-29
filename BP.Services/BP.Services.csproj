@@ -138,13 +138,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\Account\AccountProvider.cs" />
     <Compile Include="Providers\Business\BusinessProvider.cs" />
     <Compile Include="Providers\Core\CookieProvider.cs" />
     <Compile Include="Providers\Core\SMTPProvider.cs" />
     <Compile Include="Providers\Logger\CoreLoggerProvider.cs" />
+    <Compile Include="Services\Account\AccountService.cs" />
     <Compile Include="Services\Business\BusinessService.cs" />
     <Compile Include="Services\Core\CookieService.cs" />
-    <Compile Include="Services\Core\SMTPMessageService.cs" />
     <Compile Include="Services\Core\SMTPService.cs" />
     <Compile Include="Services\Logger\CoreLoggerServices.cs" />
   </ItemGroup>

@@ -1,0 +1,50 @@
+﻿@model IEnumerable<BP.VM.ViewModels.AccountAdmin.AccountAdminViewModel>
+@{
+    ViewBag.Title = "View Accounts In System";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@Html.ActionLink("Create a new general account", "CreateAccount", new { area = "Admin", controller = "AccountAdmin" }, new { @class = "btn btn-primary" })
+@Html.ActionLink("Create a new user account", "CreateUsers", new { area = "Admin", controller = "UsersAdmin" }, new { @class = "btn btn-primary" })
+@Html.ActionLink("Create a new business account", "CreateBusiness", new { area = "Admin", controller = "BusinessAdmin" }, new { @class = "btn btn-primary" })
+
+<hr />
+<div class="container">
+    <div class="row">
+        <div class="col-md-2">
+            <strong>Account Type</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Date Created</strong>
+        </div>
+        <div class="col-md-3">
+            <strong>User Name</strong>
+        </div>
+        <div class="col-md-3">
+            <strong>Email Address</strong>
+        </div>
+    </div>
+    @foreach(var account in Model.Select((value, index) => new { value, index }))
+    {
+        var classString = "background-color: gainsboro";
+        if (account.index % 2 == 0)
+        {
+            classString = "";
+        }
+        <div class="row" style="@classString">
+            <div class="col-md-2">
+                @account.value.AccountType
+            </div>
+            <div class="col-md-2">
+                @account.value.Created.ToString("dd MMM yyyy")
+            </div>
+            <div class="col-md-3">
+                @account.value.UserName
+            </div>
+            <div class="col-md-3">
+                @account.value.EmailAddress
+            </div>
+        </div>
+    }
+</div>
