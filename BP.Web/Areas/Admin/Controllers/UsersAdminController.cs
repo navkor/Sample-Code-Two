@@ -1,8 +1,11 @@
 ﻿using BP.Service.Providers.Core;
 using BP.Service.Providers.Logger;
+using BP.Services.Providers.User;
 using BP.Web.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -21,73 +24,49 @@ namespace BP.Web.Areas.Admin.Controllers
         CoreLoggerProvider _logger;
         private ApplicationRoleManager _roleManager;
         private SMTPProvider _smtp;
+        private UserProvider _provider;
         public UsersAdminController() { }
-        public UsersAdminController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager, CoreLoggerProvider logger, SMTPProvider smtp)
+        public UsersAdminController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, ApplicationRoleManager roleManager, CoreLoggerProvider logger, SMTPProvider smtp, UserProvider provider)
         {
             UserManager = userManager;
             SignInManager = signInManager;
             RoleManager = roleManager;
             Logger = logger;
+            Provider = provider;
         }
 
         public SMTPProvider SMTP
         {
-            get
-            {
-                return _smtp ?? new SMTPProvider();
-            }
-            private set
-            {
-                _smtp = value;
-            }
+            get => _smtp ?? new SMTPProvider();
+            private set => _smtp = value;
         }
 
 
         public CoreLoggerProvider Logger
         {
-            get
-            {
-                return _logger ?? new CoreLoggerProvider();
-            }
-            private set
-            {
-                _logger = value;
-            }
+            get => _logger ?? new CoreLoggerProvider();
+            private set => _logger = value;
         }
         public ApplicationRoleManager RoleManager
         {
-            get
-            {
-                return _roleManager ?? HttpContext.GetOwinContext().Get<ApplicationRoleManager>();
-            }
-            private set
-            {
-                _roleManager = value;
-            }
+            get => _roleManager ?? HttpContext.GetOwinContext().Get<ApplicationRoleManager>();
+            private set => _roleManager = value;
         }
 
         public ApplicationSignInManager SignInManager
         {
-            get
-            {
-                return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
-            }
-            private set
-            {
-                _signInManager = value;
-            }
+            get => _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
+            private set => _signInManager = value;
         }
 
         public ApplicationUserManager UserManager
         {
-            get
-            {
-                return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            }
-            private set
-            {
-                _userManager = value;
-            }
+            get => _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+            private set => _userManager = value;
+        }
+        public UserProvider Provider {
+            get => _provider ?? new UserProvider();
+            private set => _provider = value;
         }
 
         [Route("Admin/UsersAdmin/ViewUsers")]
@@ -114,10 +93,7 @@ namespace BP.Web.Areas.Admin.Controllers
             ViewBag.IPAddress = IPAddress;
             var userId = User.Identity.GetUserId();
             var rolesList = await RoleManager.Roles.OrderBy(y => y.Index).ToListAsync();
-            var model = new CreateUser
-            {
-                Roles = await RolesList(rolesList, userId)
-            };
+            var model = await Provider.UpdateUserPullModel(new CreateUser(), "", 0, await RolesList(rolesList, userId));
             return View(model);
         }
 
@@ -149,15 +125,17 @@ namespace BP.Web.Areas.Admin.Controllers
                     instigator = adminUser.Email;
                     await Logger.CreateNewLog($"Successfully created user: {pullModel.UserName} from IPAddress {IPAddress}.", subject, instigator, system);
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code, area = "" }, protocol: Request.Url.Scheme);
                     await SMTP.SendNewEmail("noreply@basicallyprepared.com", user.Email, "Basically Prepared", "", "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.", "CreateAccount");
-                    return RedirectToAction("ViewUsers", new { controller = "UsersAdmin", area = "Admin" });
+                    var methodResults = await Provider.AddUserToAccount(user.Id, user.Email, user.UserName, instigator, IPAddress, 0, 4, 1);
+                    if (methodResults.Success) return RedirectToAction("ViewUsers", new { controller = "UsersAdmin", area = "Admin" });
+                    ModelState.AddModelError("", methodResults.Message);
                 }
                 AddErrors(result);
             }
             var userId = User.Identity.GetUserId();
             var rolesList = RoleManager.Roles.OrderBy(y => y.Index).ToList();
-            pullModel.Roles = await RolesList(rolesList, userId);
+            pullModel = await Provider.UpdateUserPullModel(pullModel, pullModel.SelectedRole, pullModel.AssociatedAccount, await RolesList(rolesList, userId));
             ViewBag.IPAddress = IPAddress;
             return View(pullModel);
         }
@@ -182,10 +160,9 @@ namespace BP.Web.Areas.Admin.Controllers
                 UserId = user.Id,
                 UserName = user.UserName,
                 EmailAddress = user.Email,
-                SelectedRole = roleName,
-                Roles = await RolesList(rolesList, id)
+                SelectedRole = roleName
             };
-
+            model = await Provider.UpdateEditPullModel(model, model.SelectedRole, -1, await RolesList(rolesList, id), id);
             return View(model);
         }
 
@@ -199,9 +176,9 @@ namespace BP.Web.Areas.Admin.Controllers
             var subject = "User Edit";
             var instigator = "User Admin System";
             var system = "Admin Controller";
+            var current = await UserManager.FindByIdAsync(model.UserId);
             if (ModelState.IsValid)
             {
-                var current = await UserManager.FindByIdAsync(model.UserId);
                 var emailToVerify = false; var keepRole = true;
                 if (model.UserName != current.UserName) current.UserName = model.UserName;
                 if (model.EmailAddress != current.Email)
@@ -220,7 +197,7 @@ namespace BP.Web.Areas.Admin.Controllers
                     if (emailToVerify)
                     {
                         string code = await UserManager.GenerateEmailConfirmationTokenAsync(current.Id);
-                        var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = current.Id, code = code }, protocol: Request.Url.Scheme);
+                        var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = current.Id, code = code, area = "" }, protocol: Request.Url.Scheme);
                         await SMTP.SendNewEmail("noreply@basicallyprepared.com", current.Email, "Basically Prepared", "", "Confirm your new email", "Please confirm your new email address by clicking <a href=\"" + callbackUrl + $"\">{callbackUrl}</a>.<br />You can also copy and paste it to your browser if your email does not allow you to click the link.<br /><p>Until you confirm your email address, you won't be able to log into your account.</p>", "NewAccount");
                     }
                     if (!keepRole)
@@ -260,11 +237,12 @@ namespace BP.Web.Areas.Admin.Controllers
                 ModelState.AddModelError("", sb.ToString());
             }
             var rolesList = await RoleManager.Roles.OrderBy(y => y.Index).ToListAsync();
-            model.Roles = await RolesList(rolesList, model.UserId);
+            var userId = current.Id;
+            model = await Provider.UpdateEditPullModel(model, model.SelectedRole, model.AssociatedAccount, await RolesList(rolesList, userId), userId);
             return View(model);
         }
 
-        private async Task<IEnumerable<SelectListItem>> RolesList(IEnumerable<ApplicationRole> rolesList, string userId)
+        private async Task<IEnumerable<string>> RolesList(IEnumerable<ApplicationRole> rolesList, string userId)
         {
             var currentIndex = 0;
             var maxIndex = 0;
@@ -273,14 +251,10 @@ namespace BP.Web.Areas.Admin.Controllers
                 if (await UserManager.IsInRoleAsync(userId, role.Name)) currentIndex = role.Index;
                 if (await UserManager.IsInRoleAsync(User.Identity.GetUserId(), role.Name)) maxIndex = role.Index;
             }
-            var returnList = rolesList.Where(x => x.Index <= maxIndex).OrderBy(y => y.Index).Select(n => new SelectListItem
-            {
-                Text = n.Name,
-                Value = n.Name,
-                Selected = n.Index == currentIndex
-            });
+            var returnList = rolesList.Where(x => x.Index <= maxIndex).OrderBy(y => y.Index).Select(n => n.Name);
             return returnList;
         }
+        
 
         protected override void Dispose(bool disposing)
         {

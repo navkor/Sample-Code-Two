@@ -10,7 +10,9 @@ namespace BP
     public class UserModels
     {
         public string UserId { get; set; }
+        [Display(Name = "User Name")]
         public string UserName { get; set; }
+        [Display(Name = "Email Address")]
         public string EmailAddress { get; set; }
         public bool EmailVerified { get; set; }
     }
@@ -29,13 +31,24 @@ namespace BP
         [Display(Name = "Email Address", Prompt = "A standard and correctly formatted email address")]
         public string EmailAddress { get; set; }
         public string SelectedRole { get; set; }
-        public IEnumerable<SelectListItem> Roles { get; set; }
+        [Display(Name = "Associate with Account?")]
+        public bool AssociateWithAccount { get; set; }
+        [Display(Name = "Account List")]
+        public int AssociatedAccount { get; set; }
+        public IEnumerable<NameIdSelectedLists> AccountLists { get; set; }
+        public IEnumerable<NameStringIdSelected> Roles { get; set; }
     }
 
     public class EditUser : UserModels
     {
+        [Display(Name = "Associate with Account?")]
+        public bool AssociateWithAccount { get; set; }
+        [Display(Name = "Account List")]
+        public int AssociatedAccount { get; set; }
+        public IEnumerable<NameIdSelectedLists> AccountLists { get; set; }
+        [Display(Name = "Role")]
         public string SelectedRole { get; set; }
-        public IEnumerable<SelectListItem> Roles { get; set; }
+        public IEnumerable<NameStringIdSelected> Roles { get; set; }
     }
 
     public class EditUserName

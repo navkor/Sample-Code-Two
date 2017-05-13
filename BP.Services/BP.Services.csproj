@@ -143,11 +143,13 @@
     <Compile Include="Providers\Core\CookieProvider.cs" />
     <Compile Include="Providers\Core\SMTPProvider.cs" />
     <Compile Include="Providers\Logger\CoreLoggerProvider.cs" />
+    <Compile Include="Providers\User\UserProvider.cs" />
     <Compile Include="Services\Account\AccountService.cs" />
     <Compile Include="Services\Business\BusinessService.cs" />
     <Compile Include="Services\Core\CookieService.cs" />
     <Compile Include="Services\Core\SMTPService.cs" />
     <Compile Include="Services\Logger\CoreLoggerServices.cs" />
+    <Compile Include="Services\User\UserService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BP.Auth\BP.Auth.csproj">

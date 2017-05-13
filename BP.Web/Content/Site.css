@@ -49,3 +49,8 @@ ul.nav li.dropdown:hover > ul.dropdown-menu {
         background: url(/content/images/gui/loginTwitter.png);
         background-repeat: no-repeat;
     }
+
+.navkorInvisible
+{
+    display:none;
+}

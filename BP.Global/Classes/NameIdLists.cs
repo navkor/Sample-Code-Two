@@ -17,6 +17,11 @@
         public string Name { get; set; }
     }
 
+    public class NameStringIdSelected : NameStringId
+    {
+        public bool Selected { get; set; }
+    }
+
     public class NameIdSelectedLists : NameIdLists
     {
         public bool Selected { get; set; }

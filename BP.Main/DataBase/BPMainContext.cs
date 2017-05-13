@@ -89,6 +89,7 @@ namespace BP.Main.DataBase
         public DbSet<NameFormatMap> NameFormatMaps { get; set; }
         public DbSet<NewsLetter> NewsLetters { get; set; }
         public DbSet<PostalCode> PostalCodes { get; set; }
+        public DbSet<PresidenceType> PresidenceTypes { get; set; }
         public DbSet<ProfileAttribute> ProfileAttributes { get; set; }
         public DbSet<StreetAttribute> StreetAttributes { get; set; }
         public DbSet<StringTable> StringTables { get; set; }

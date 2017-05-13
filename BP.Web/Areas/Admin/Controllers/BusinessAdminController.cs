@@ -137,13 +137,12 @@ namespace BP.Web.Areas.Admin.Controllers
             {
                 if (pullModel.BusinessTypeId > 0)
                 {
+                    var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                    instigator = user.Email;
                     // everything is just fine
-                    var methodResults = await Provider.CreateNewBusiness(pullModel);
+                    var methodResults = await Provider.CreateNewBusiness(pullModel, IPAddress, instigator);
                     if (methodResults.Success)
                     {
-                        var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
-                        instigator = user.Email;
-                        await Logger.CreateNewLog($"Successfully created {pullModel.BusinessName} from {IPAddress}", subject, instigator, system);
                         return RedirectToAction("ViewBusiness");
                     }
                     ModelState.AddModelError("", methodResults.Message);
@@ -152,6 +151,28 @@ namespace BP.Web.Areas.Admin.Controllers
             }
             pullModel = await Provider.UpdatePullModel(pullModel);
             return View(pullModel);
+        }
+
+        [Route("Admin/BusinessAdmin/DeleteBusiness")]
+        public async Task<ActionResult> DeleteBusiness(int? id)
+        {
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            ViewBag.IPAddress = IPAddress;
+            var viewModel = await Provider.BusinessById(id ?? 0);
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("Admin/BusinessAdmin/DeleteThisBusiness")]
+        public async Task<ActionResult> DeleteThisBusiness(int id)
+        {
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            var instigator = user.Email;
+            var IPAddress = Server.HtmlEncode(Request.UserHostAddress);
+            var methodResults = await Provider.RemoveBusinessAccount(id, IPAddress, instigator);
+            if (methodResults.Success) return RedirectToAction("ViewBusiness");
+            return RedirectToRoute(new { controller = "BusinessAdmin", action = "DeleteBusiness", id = id, area = "Admin" });
         }
 
         protected override void Dispose(bool disposing)

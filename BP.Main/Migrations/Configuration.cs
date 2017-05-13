@@ -142,9 +142,23 @@ namespace BP.Main.Migrations
                 new BusinessType { Index = 6, Name = "Wholesale Service" },
                 new BusinessType { Index = 7, Name = "Maintenance" },
                 new BusinessType { Index = 8, Name = "Versatile" },
+                new BusinessType { Index = 9, Name = "Government" },
+                new BusinessType { Index = 10, Name = "Manufacturing" }
             };
 
             businessTypes.ForEach(h => context.BusinessTypes.AddOrUpdate(s => s.Index, h));
+
+            var presidenceTypes = new List<PresidenceType> {
+                new PresidenceType { Index = 1, Name = "Owner" },
+                new PresidenceType { Index = 2, Name = "Primary" },
+                new PresidenceType { Index = 3, Name = "Manager" },
+                new PresidenceType { Index = 4, Name = "Employee" },
+                new PresidenceType { Index = 5, Name = "Access Granted" },
+                new PresidenceType { Index = 6, Name = "Guest" },
+                new PresidenceType { Index = 7, Name = "Stranger" },
+            };
+
+            presidenceTypes.ForEach(h => context.PresidenceTypes.AddOrUpdate(s => s.Index, h));
 
             context.SaveChanges();
         }

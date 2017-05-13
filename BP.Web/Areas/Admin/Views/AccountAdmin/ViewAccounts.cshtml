@@ -5,7 +5,6 @@
 
 <h2>@ViewBag.Title</h2>
 
-@Html.ActionLink("Create a new general account", "CreateAccount", new { area = "Admin", controller = "AccountAdmin" }, new { @class = "btn btn-primary" })
 @Html.ActionLink("Create a new user account", "CreateUsers", new { area = "Admin", controller = "UsersAdmin" }, new { @class = "btn btn-primary" })
 @Html.ActionLink("Create a new business account", "CreateBusiness", new { area = "Admin", controller = "BusinessAdmin" }, new { @class = "btn btn-primary" })
 
@@ -17,6 +16,9 @@
         </div>
         <div class="col-md-2">
             <strong>Date Created</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Account Name</strong>
         </div>
         <div class="col-md-3">
             <strong>User Name</strong>
@@ -39,11 +41,14 @@
             <div class="col-md-2">
                 @account.value.Created.ToString("dd MMM yyyy")
             </div>
+            <div class="col-md-2">
+                @account.value.AccountName
+            </div>
             <div class="col-md-3">
                 @account.value.UserName
             </div>
             <div class="col-md-3">
-                @account.value.EmailAddress
+               @Html.Raw(@account.value.EmailAddress)
             </div>
         </div>
     }

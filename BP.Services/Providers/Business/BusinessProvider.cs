@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using BP.Service.Providers.Logger;
 
 namespace BP.Services.Providers.Business
 {
@@ -17,43 +18,40 @@ namespace BP.Services.Providers.Business
     {
         BPMainContext _context;
         BusinessService _service;
+        CoreLoggerProvider _logger;
 
         public BusinessProvider() { }
-        public BusinessProvider(BPMainContext context) : this(context, null) { }
-        public BusinessProvider(BusinessService service) : this(null, service) { }
 
-        public BusinessProvider(BPMainContext context, BusinessService service)
+        public CoreLoggerProvider Logger
         {
-            _context = context;
-            _service = service;
+            get => _logger ?? new CoreLoggerProvider();
+            private set => _logger = value;
         }
 
         public BPMainContext Context
         {
-            get
-            {
-                return _context ?? new BPMainContext();
-            }
-            private set
-            {
-                _context = value;
-            }
+            get => _context ?? new BPMainContext();
+            private set => _context = value;
         }
 
         public BusinessService Service
         {
-            get
-            {
-                return _service ?? new BusinessService();
-            }
-            private set
-            {
-                _service = value;
-            }
+            get => _service ?? new BusinessService();
+            private set => _service = value;
         }
 
         bool disposed = false;
         SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);
+
+        public async Task<BusinessViewModel> BusinessById(int id)
+        {
+            return await Service.BusinessById(id, Context);
+        }
+
+        public async Task<MethodResults> RemoveBusinessAccount(int id, string IPAddress, string instigator)
+        {
+            return await Service.RemoveBusinessAccount(id, Context, Logger, IPAddress, instigator);
+        }
 
         public async Task<BusinessPullModel> UpdatePullModel(BusinessPullModel pullModel)
         {
@@ -62,19 +60,20 @@ namespace BP.Services.Providers.Business
 
         public async Task<IEnumerable<BusinessViewModel>> ViewAllBusinesses(IEnumerable<NameStringId> userList)
         {
+            //Context.Configuration.ProxyCreationEnabled = false;
             var coreBusiness = await Context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 2).ToListAsync();
             var trialBusiness = await Context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 4).ToListAsync();
             var sampleBusiness = await Context.Accounts.Where(x => x.EntityAttribute.AccountType.Index == 6).ToListAsync();
             var prefinal = coreBusiness.Union(trialBusiness);
             var finalList = prefinal.Union(sampleBusiness);
             // now I have the full list of all businesses in the db
-            return await Service.PopulateBusinessValues(finalList, Context, userList);
+            return Service.PopulateBusinessValues(finalList, Context, userList);
 
         }
 
-        public async Task<MethodResults> CreateNewBusiness(BusinessPullModel pullModel)
+        public async Task<MethodResults> CreateNewBusiness(BusinessPullModel pullModel, string IPAddress, string instigator)
         {
-            return await Service.CreateNewBusiness(pullModel, Context);
+            return await Service.CreateNewBusiness(pullModel, Context, IPAddress, instigator, Logger);
         }
 
         public void Dispose()

@@ -1,0 +1,34 @@
+﻿@model BP.VM.ViewModels.Business.BusinessViewModel
+@{
+    ViewBag.Title = "Delete A Business";
+}
+
+<h2>Delete A Business</h2>
+
+<hr />
+Your IP Address is @ViewBag.IPAddress
+
+<h4>Are you sure you want to delete @Model.Name?</h4>
+
+<p>
+    It is a @Model.BusinessType.Name business.
+</p>
+
+@if(Model.Logins.Count() > 0)
+{
+    <p>
+        It has @Model.Logins.Count() login accounts associated with it.
+    </p>
+}
+
+<p>
+    But if you are certain you want to delete it, simply press the button below.
+</p>
+@using (Html.BeginForm("DeleteThisBusiness", "BusinessAdmin", new { area = "Admin", id = Model.ID }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ID)
+    <input type="submit" value="Delete Now" class="btn btn-danger" />
+}
+
+@Html.RouteLink("Back to the list", new { controller = "BusinessAdmin", action = "ViewBusiness", area = "Admin" }, new { @class = "btn btn-default" })

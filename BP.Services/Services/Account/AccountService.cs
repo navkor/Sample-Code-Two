@@ -67,11 +67,12 @@ namespace BP.Services.Services.Account
         private async Task<IEnumerable<AccountAdminViewModel>> PrepopulateAccountsWithUserName(BPMainContext context, ApplicationUserManager manager)
         {
             var list = await context.Accounts.ToListAsync();
-            var returnList = new ConcurrentBag<AccountAdminViewModel>();
+            var returnList = new List<AccountAdminViewModel>();
             var userList = await manager.Users.ToListAsync();
-            await Task.Run(() => Parallel.ForEach(list, account => {
-                // we have the list of accounts, let's go find out if they have accounts associated with them
+            foreach(var account in list)
+            {
                 var accountAdminViewModel = new AccountAdminViewModel();
+                var verifiedString = "";
                 accountAdminViewModel.ID = account.ID;
                 if (account.LoginAttribute != null)
                 {
@@ -82,16 +83,24 @@ namespace BP.Services.Services.Account
                         var user = userList.FirstOrDefault(x => x.Id.Equals(loginId.UserId));
                         if (user != null)
                         {
+                            verifiedString = user.EmailConfirmed ? $"<p style=\"color: green\">{user.Email} verified</p>" :
+                                $"<p style=\"color: red;\">{user.Email}</p>";
                             accountAdminViewModel.UserName = user.UserName;
-                            accountAdminViewModel.EmailAddress = user.Email;
+                            accountAdminViewModel.EmailAddress = verifiedString;
+                            accountAdminViewModel.AccountName = user.UserName;
                         }
                     }
                 }
-                if (account.BusinessAttribute != null) accountAdminViewModel.AccountType = "Business";
+                if (account.BusinessAttribute != null)
+                {
+                    accountAdminViewModel.AccountType = "Business";
+                    accountAdminViewModel.AccountName = account.BusinessAttribute.BusinessName;
+                }
                 else if (account.UserAttribute != null) accountAdminViewModel.AccountType = "Personal";
                 else accountAdminViewModel.AccountType = "UnOwned";
+                accountAdminViewModel.Created = account?.EntityAttribute?.AccountDates.FirstOrDefault(x => x.AccountDateType.Index == 1).DateLine ?? DateTime.Now;
                 returnList.Add(accountAdminViewModel);
-            }));
+            }
             return returnList;
         }
 

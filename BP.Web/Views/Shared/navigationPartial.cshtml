@@ -48,6 +48,9 @@
         <li>
             @Html.ActionLink("Create User", "CreateUsers", new { controller = "UsersAdmin", area = "Admin" })
         </li>
+        <li>
+            @Html.ActionLink("View Accounts", "ViewAccounts", new { controller = "AccountAdmin", area = "Admin" })
+        </li>
     }
     @if (Model.RoleGroupIndex >= 800)
     {
