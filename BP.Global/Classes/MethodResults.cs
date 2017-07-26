@@ -17,4 +17,9 @@ namespace BP
     {
         public object ResultObject { get; set; }
     }
+
+    public class MethodResults<T> : MethodResults
+    {
+        public IEnumerable<T> ListObject { get; set; }
+    }
 }
